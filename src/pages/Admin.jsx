@@ -1,5 +1,17 @@
 import React, { useState } from "react";
-import { Form, Input, Button, Table, message } from "antd";
+import {
+  Form,
+  Input,
+  Button,
+  Table,
+  message,
+  Select,
+  Row,
+  Col,
+  Space,
+} from "antd";
+
+const { Option } = Select;
 
 const Admin = () => {
   const [voteTopics, setVoteTopics] = useState([]);
@@ -15,6 +27,7 @@ const Admin = () => {
               ...topic,
               name: values.topicName,
               description: values.description,
+              status: values.status,
             }
           : topic
       );
@@ -27,6 +40,7 @@ const Admin = () => {
         id: Date.now(), // Unique ID for each topic
         name: values.topicName,
         description: values.description,
+        status: values.status,
         votes: 0, // Initial votes
       };
       setVoteTopics([...voteTopics, newTopic]);
@@ -45,6 +59,7 @@ const Admin = () => {
     form.setFieldsValue({
       topicName: topic.name,
       description: topic.description,
+      status: topic.status,
     });
   };
 
@@ -53,6 +68,7 @@ const Admin = () => {
       title: "Vote Topic Name",
       dataIndex: "name",
       key: "name",
+      width: "25%",
     },
     {
       title: "Votes (%)",
@@ -61,23 +77,33 @@ const Admin = () => {
       render: (votes) => `${votes}%`,
     },
     {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+    },
+    {
       title: "Actions",
       key: "actions",
       render: (text, record) => (
         <>
-          <Button type="link" onClick={() => onEdit(record)}>
-            Edit
-          </Button>
-          <Button type="link" danger onClick={() => onDelete(record.id)}>
-            Delete
-          </Button>
+          <Space size="small">
+            <Button type="dashed" onClick={() => onEdit(record)}>
+              Add Options
+            </Button>
+            <Button type="primary" onClick={() => onEdit(record)}>
+              Edit
+            </Button>
+            <Button danger onClick={() => onDelete(record.id)}>
+              Delete
+            </Button>
+          </Space>
         </>
       ),
     },
   ];
 
   return (
-    <div style={{ maxWidth: "600px", margin: "50px auto" }}>
+    <div style={{ maxWidth: "700px", margin: "50px auto" }}>
       <h1>Admin Panel - Manage Vote Topics</h1>
 
       {/* Form to create or edit a vote topic */}
@@ -87,6 +113,7 @@ const Admin = () => {
         initialValues={{
           topicName: editTopic ? editTopic.name : "",
           description: editTopic ? editTopic.description : "",
+          status: editTopic ? editTopic.status : "active",
         }}
         onFinish={onFinish}
         layout="vertical"
@@ -101,13 +128,31 @@ const Admin = () => {
           <Input placeholder="Enter vote topic name" />
         </Form.Item>
 
-        <Form.Item
-          label="Description"
-          name="description"
-          rules={[{ required: true, message: "Please input the description!" }]}
-        >
-          <Input.TextArea placeholder="Enter description" />
-        </Form.Item>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label="Description"
+              name="description"
+              rules={[
+                { required: true, message: "Please input the description!" },
+              ]}
+            >
+              <Input.TextArea placeholder="Enter description" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="Status"
+              name="status"
+              rules={[{ required: true, message: "Please select the status!" }]}
+            >
+              <Select placeholder="Select status" style={{ height: "54px" }}>
+                <Option value="active">Active</Option>
+                <Option value="inactive">Inactive</Option>
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
 
         <Form.Item>
           <Button type="primary" htmlType="submit" block>
