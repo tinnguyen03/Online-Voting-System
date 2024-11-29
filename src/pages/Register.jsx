@@ -1,5 +1,6 @@
 import React from "react";
 import { Form, Input, Button, Typography } from "antd";
+import { Link } from "react-router-dom"; // Import Link component
 
 const { Title } = Typography;
 
@@ -17,7 +18,7 @@ const Register = () => {
     <div
       style={{ maxWidth: "400px", margin: "50px auto", textAlign: "center" }}
     >
-      <Title level={2}>Register</Title>
+      <Title>Register</Title>
       <Form
         name="register"
         layout="vertical"
@@ -45,22 +46,16 @@ const Register = () => {
           <Input placeholder="Enter your email" />
         </Form.Item>
 
-        {/* National ID Field */}
-        <Form.Item
-          label="National ID"
-          name="nationalId"
-          rules={[
-            { required: true, message: "Please input your National ID!" },
-          ]}
-        >
-          <Input placeholder="Enter your National ID" />
-        </Form.Item>
-
         {/* Submit Button */}
         <Form.Item>
           <Button type="primary" htmlType="submit" block>
             Register
           </Button>
+        </Form.Item>
+
+        {/* Already have an account link */}
+        <Form.Item>
+          <Link to="/login">Already have an account?</Link>
         </Form.Item>
       </Form>
     </div>

@@ -1,6 +1,8 @@
 import React from "react";
-import { Form, Input, Button, Checkbox, message } from "antd";
-import { useNavigate } from "react-router-dom";
+import { Form, Input, Button, Typography, message } from "antd";
+import { useNavigate, Link } from "react-router-dom"; // Import Link component
+
+const { Title } = Typography;
 
 const Login = () => {
   const navigate = useNavigate();
@@ -37,7 +39,7 @@ const Login = () => {
     <div
       style={{ maxWidth: "400px", margin: "50px auto", textAlign: "center" }}
     >
-      <h1>Login</h1>
+      <Title>Login</Title>
       <Form
         name="login"
         initialValues={{ remember: true }}
@@ -61,14 +63,15 @@ const Login = () => {
           <Input.Password placeholder="Enter your password" />
         </Form.Item>
 
-        <Form.Item name="remember" valuePropName="checked">
-          <Checkbox>Remember me</Checkbox>
-        </Form.Item>
-
         <Form.Item>
           <Button type="primary" htmlType="submit" block>
             Login
           </Button>
+        </Form.Item>
+
+        {/* Don't have an account yet link */}
+        <Form.Item>
+          <Link to="/register">Don't have an account yet?</Link>
         </Form.Item>
       </Form>
     </div>
