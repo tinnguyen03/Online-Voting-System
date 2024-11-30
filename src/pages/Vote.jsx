@@ -8,11 +8,16 @@ import {
   Form,
   Input,
   message,
+  Layout,
 } from "antd";
+import HeaderComponent from "../components/HeaderComponent";
+import { useNavigate } from "react-router-dom";
 
 const { Title } = Typography;
+const { Content } = Layout;
 
 const Vote = () => {
+  const navigate = useNavigate();
   const [voteTopics, setVoteTopics] = useState([
     {
       id: 1,
@@ -89,53 +94,67 @@ const Vote = () => {
     },
   ];
 
-  return (
-    <div style={{ maxWidth: "800px", margin: "50px auto" }}>
-      <Title level={2}>Vote</Title>
-      <Table
-        columns={columns}
-        dataSource={voteTopics}
-        rowKey="id"
-        expandable={{
-          expandedRowRender: (record) => (
-            <div>
-              <p>
-                <strong>Description:</strong> {record.description}
-              </p>
-              <p>
-                <strong>Comment:</strong> {record.comment}
-              </p>
-            </div>
-          ),
-        }}
-      />
+  const handleLogout = () => {
+    navigate("/login");
+    message.success("Logged out successfully!");
+  };
 
-      <Modal
-        title="Vote"
-        visible={isModalVisible}
-        onOk={handleOk}
-        onCancel={handleCancel}
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            name="vote"
-            rules={[{ required: true, message: "Please select an option!" }]}
+  return (
+    <Layout>
+      <HeaderComponent onLogout={handleLogout} userType="User" />
+      <Content style={{ padding: "0 50px", marginTop: 64 }}>
+        <div style={{ maxWidth: "800px", margin: "50px auto" }}>
+          <Title level={2}>Vote</Title>
+          <Table
+            columns={columns}
+            dataSource={voteTopics}
+            rowKey="id"
+            expandable={{
+              expandedRowRender: (record) => (
+                <div>
+                  <p>
+                    <strong>Description:</strong> {record.description}
+                  </p>
+                  <p>
+                    <strong>Comment:</strong> {record.comment}
+                  </p>
+                </div>
+              ),
+            }}
+          />
+
+          <Modal
+            title="Vote"
+            visible={isModalVisible}
+            onOk={handleOk}
+            onCancel={handleCancel}
           >
-            <Radio.Group>
-              <Radio value={true}>Vote</Radio>
-              <Radio value={false}>Not Vote</Radio>
-            </Radio.Group>
-          </Form.Item>
-          <Form.Item
-            name="comment"
-            label="Comment"
-            rules={[{ required: true, message: "Please input your comment!" }]}
-          >
-            <Input.TextArea placeholder="Enter your comment" />
-          </Form.Item>
-        </Form>
-      </Modal>
-    </div>
+            <Form form={form} layout="vertical">
+              <Form.Item
+                name="vote"
+                rules={[
+                  { required: true, message: "Please select an option!" },
+                ]}
+              >
+                <Radio.Group>
+                  <Radio value={true}>Vote</Radio>
+                  <Radio value={false}>Not Vote</Radio>
+                </Radio.Group>
+              </Form.Item>
+              <Form.Item
+                name="comment"
+                label="Comment"
+                rules={[
+                  { required: true, message: "Please input your comment!" },
+                ]}
+              >
+                <Input.TextArea placeholder="Enter your comment" />
+              </Form.Item>
+            </Form>
+          </Modal>
+        </div>
+      </Content>
+    </Layout>
   );
 };
 
