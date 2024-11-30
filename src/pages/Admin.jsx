@@ -5,13 +5,13 @@ import {
   Button,
   Table,
   message,
+  Select,
   Row,
   Col,
   Space,
-  DatePicker,
 } from "antd";
-import Header from "../components/Header";
-import moment from "moment";
+
+const { Option } = Select;
 
 const Admin = () => {
   const [voteTopics, setVoteTopics] = useState([]);
@@ -27,7 +27,7 @@ const Admin = () => {
               ...topic,
               name: values.topicName,
               description: values.description,
-              deadline: values.deadline.format("YYYY-MM-DD"),
+              status: values.status,
             }
           : topic
       );
@@ -40,7 +40,7 @@ const Admin = () => {
         id: Date.now(), // Unique ID for each topic
         name: values.topicName,
         description: values.description,
-        deadline: values.deadline.format("YYYY-MM-DD"),
+        status: values.status,
         votes: 0, // Initial votes
       };
       setVoteTopics([...voteTopics, newTopic]);
@@ -59,7 +59,7 @@ const Admin = () => {
     form.setFieldsValue({
       topicName: topic.name,
       description: topic.description,
-      deadline: topic.deadline ? moment(topic.deadline, "YYYY-MM-DD") : null,
+      status: topic.status,
     });
   };
 
@@ -68,19 +68,18 @@ const Admin = () => {
       title: "Vote Topic Name",
       dataIndex: "name",
       key: "name",
-      width: "23%",
+      width: "25%",
     },
     {
       title: "Votes (%)",
       dataIndex: "votes",
       key: "votes",
-      width: "14%",
       render: (votes) => `${votes}%`,
     },
     {
-      title: "Deadline",
-      dataIndex: "deadline",
-      key: "deadline",
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
     },
     {
       title: "Actions",
@@ -105,7 +104,6 @@ const Admin = () => {
 
   return (
     <div style={{ maxWidth: "700px", margin: "50px auto" }}>
-      <Header userType={"admin"} />
       <h1>Admin Panel - Manage Vote Topics</h1>
 
       {/* Form to create or edit a vote topic */}
@@ -115,7 +113,7 @@ const Admin = () => {
         initialValues={{
           topicName: editTopic ? editTopic.name : "",
           description: editTopic ? editTopic.description : "",
-          deadline: editTopic ? moment(editTopic.deadline, "YYYY-MM-DD") : null,
+          status: editTopic ? editTopic.status : "active",
         }}
         onFinish={onFinish}
         layout="vertical"
@@ -144,13 +142,14 @@ const Admin = () => {
           </Col>
           <Col span={12}>
             <Form.Item
-              label="Deadline"
-              name="deadline"
-              rules={[
-                { required: true, message: "Please select the deadline!" },
-              ]}
+              label="Status"
+              name="status"
+              rules={[{ required: true, message: "Please select the status!" }]}
             >
-              <DatePicker style={{ width: "100%" }} />
+              <Select placeholder="Select status" style={{ height: "54px" }}>
+                <Option value="active">Active</Option>
+                <Option value="inactive">Inactive</Option>
+              </Select>
             </Form.Item>
           </Col>
         </Row>

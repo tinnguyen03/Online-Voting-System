@@ -1,15 +1,5 @@
 import React, { useState } from "react";
-import {
-  Table,
-  Button,
-  Typography,
-  Modal,
-  Radio,
-  Form,
-  Input,
-  message,
-} from "antd";
-import Header from "../components/Header";
+import { Table, Button, Typography, Modal, Radio, Form, message } from "antd";
 
 const { Title } = Typography;
 
@@ -21,7 +11,6 @@ const Vote = () => {
       description: "Description for Topic 1",
       status: "active",
       voted: null,
-      comment: "",
     },
     {
       id: 2,
@@ -29,7 +18,6 @@ const Vote = () => {
       description: "Description for Topic 2",
       status: "inactive",
       voted: null,
-      comment: "",
     },
     // Add more topics as needed
   ]);
@@ -42,26 +30,19 @@ const Vote = () => {
     setIsModalVisible(true);
   };
 
-  const handleOk = async () => {
-    try {
-      const values = await form.validateFields();
+  const handleOk = () => {
+    form.validateFields().then((values) => {
       const updatedTopics = voteTopics.map((topic) =>
-        topic.id === selectedTopic.id
-          ? { ...topic, voted: values.vote, comment: values.comment }
-          : topic
+        topic.id === selectedTopic.id ? { ...topic, voted: values.vote } : topic
       );
       setVoteTopics(updatedTopics);
       setIsModalVisible(false);
       message.success("Vote submitted successfully!");
-    } catch (error) {
-      console.error("Validation failed:", error);
-      message.error("Validation failed. Please check your input.");
-    }
+    });
   };
 
   const handleCancel = () => {
     setIsModalVisible(false);
-    form.resetFields(); // Reset the form fields when the modal is closed
   };
 
   const columns = [
@@ -96,7 +77,6 @@ const Vote = () => {
 
   return (
     <div style={{ maxWidth: "800px", margin: "50px auto" }}>
-      <Header userType={"voter"} />
       <Title level={2}>Vote</Title>
       <Table
         columns={columns}
@@ -109,7 +89,7 @@ const Vote = () => {
 
       <Modal
         title="Vote"
-        open={isModalVisible}
+        visible={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
       >
@@ -122,13 +102,6 @@ const Vote = () => {
               <Radio value={true}>Vote</Radio>
               <Radio value={false}>Not Vote</Radio>
             </Radio.Group>
-          </Form.Item>
-          <Form.Item
-            name="comment"
-            label="Comment"
-            rules={[{ required: true, message: "Please input your comment!" }]}
-          >
-            <Input.TextArea placeholder="Enter your comment" />
           </Form.Item>
         </Form>
       </Modal>
