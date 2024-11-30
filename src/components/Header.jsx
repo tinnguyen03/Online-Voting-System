@@ -103,7 +103,16 @@ const Vote = () => {
         dataSource={voteTopics}
         rowKey="id"
         expandable={{
-          expandedRowRender: (record) => <p>{record.description}</p>,
+          expandedRowRender: (record) => (
+            <div>
+              <p>
+                <strong>Description:</strong> {record.description}
+              </p>
+              <p>
+                <strong>Comment:</strong> {record.comment}
+              </p>
+            </div>
+          ),
         }}
       />
 
