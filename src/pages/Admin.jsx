@@ -73,7 +73,7 @@ const Admin = () => {
       title: "Vote Topic Name",
       dataIndex: "name",
       key: "name",
-      width: "25%",
+      width: "23%",
     },
     {
       title: "Votes (%)",
