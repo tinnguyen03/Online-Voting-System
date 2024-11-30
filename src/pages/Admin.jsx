@@ -91,14 +91,19 @@ const Admin = () => {
       title: "Actions",
       key: "actions",
       render: (text, record) => (
-        <Space size="small">
-          <Button type="primary" onClick={() => onEdit(record)}>
-            Edit
-          </Button>
-          <Button danger onClick={() => onDelete(record.id)}>
-            Delete
-          </Button>
-        </Space>
+        <>
+          <Space size="small">
+            <Button type="dashed" onClick={() => onEdit(record)}>
+              Add Options
+            </Button>
+            <Button type="primary" onClick={() => onEdit(record)}>
+              Edit
+            </Button>
+            <Button danger onClick={() => onDelete(record.id)}>
+              Delete
+            </Button>
+          </Space>
+        </>
       ),
     },
   ];
@@ -111,7 +116,7 @@ const Admin = () => {
   return (
     <Layout>
       <HeaderComponent onLogout={handleLogout} userType="Admin" />
-      <Content style={{ padding: "0 50px", marginTop: 64 }}>
+      <Content>
         <div style={{ maxWidth: "700px", margin: "50px auto" }}>
           <h1>Admin Panel - Manage Vote Topics</h1>
 

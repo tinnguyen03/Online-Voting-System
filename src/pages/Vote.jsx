@@ -102,7 +102,7 @@ const Vote = () => {
   return (
     <Layout>
       <HeaderComponent onLogout={handleLogout} userType="User" />
-      <Content style={{ padding: "0 50px", marginTop: 64 }}>
+      <Content>
         <div style={{ maxWidth: "800px", margin: "50px auto" }}>
           <Title level={2}>Vote</Title>
           <Table
