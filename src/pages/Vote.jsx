@@ -1,52 +1,110 @@
 import React, { useState } from "react";
-import { Form, Radio, Button, Typography } from "antd";
+import { Table, Button, Typography, Modal, Radio, Form, message } from "antd";
 
 const { Title } = Typography;
 
 const Vote = () => {
-  const [selectedCandidate, setSelectedCandidate] = useState("");
+  const [voteTopics, setVoteTopics] = useState([
+    {
+      id: 1,
+      name: "Topic 1",
+      description: "Description for Topic 1",
+      status: "active",
+      voted: null,
+    },
+    {
+      id: 2,
+      name: "Topic 2",
+      description: "Description for Topic 2",
+      status: "inactive",
+      voted: null,
+    },
+    // Add more topics as needed
+  ]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedTopic, setSelectedTopic] = useState(null);
+  const [form] = Form.useForm();
 
-  const onFinish = (values) => {
-    console.log("Selected Candidate:", values.candidate);
-    // Handle vote submission logic, such as calling an API to submit the vote
+  const showModal = (topic) => {
+    setSelectedTopic(topic);
+    setIsModalVisible(true);
   };
 
-  const onChange = (e) => {
-    setSelectedCandidate(e.target.value);
+  const handleOk = () => {
+    form.validateFields().then((values) => {
+      const updatedTopics = voteTopics.map((topic) =>
+        topic.id === selectedTopic.id ? { ...topic, voted: values.vote } : topic
+      );
+      setVoteTopics(updatedTopics);
+      setIsModalVisible(false);
+      message.success("Vote submitted successfully!");
+    });
   };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
+
+  const columns = [
+    {
+      title: "Topic Name",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "Vote",
+      dataIndex: "voted",
+      key: "voted",
+      render: (voted) =>
+        voted === null ? "N/A" : voted ? "Voted" : "Not Voted",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => (status === "active" ? "Active" : "Inactive"),
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (text, record) => (
+        <Button type="primary" onClick={() => showModal(record)}>
+          Vote
+        </Button>
+      ),
+    },
+  ];
 
   return (
-    <div
-      style={{ maxWidth: "400px", margin: "50px auto", textAlign: "center" }}
-    >
+    <div style={{ maxWidth: "800px", margin: "50px auto" }}>
       <Title level={2}>Vote</Title>
-      <p>Select your candidate:</p>
+      <Table
+        columns={columns}
+        dataSource={voteTopics}
+        rowKey="id"
+        expandable={{
+          expandedRowRender: (record) => <p>{record.description}</p>,
+        }}
+      />
 
-      <Form
-        name="vote"
-        layout="vertical"
-        initialValues={{ candidate: selectedCandidate }}
-        onFinish={onFinish}
+      <Modal
+        title="Vote"
+        visible={isModalVisible}
+        onOk={handleOk}
+        onCancel={handleCancel}
       >
-        {/* Candidate Selection */}
-        <Form.Item
-          name="candidate"
-          rules={[{ required: true, message: "Please select a candidate!" }]}
-        >
-          <Radio.Group onChange={onChange} value={selectedCandidate}>
-            <Radio value="Candidate A">Candidate A</Radio>
-            <Radio value="Candidate B">Candidate B</Radio>
-            {/* You can add more candidates here */}
-          </Radio.Group>
-        </Form.Item>
-
-        {/* Submit Button */}
-        <Form.Item>
-          <Button type="primary" htmlType="submit" block>
-            Submit Vote
-          </Button>
-        </Form.Item>
-      </Form>
+        <Form form={form} layout="vertical">
+          <Form.Item
+            name="vote"
+            rules={[{ required: true, message: "Please select an option!" }]}
+          >
+            <Radio.Group>
+              <Radio value={true}>Vote</Radio>
+              <Radio value={false}>Not Vote</Radio>
+            </Radio.Group>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };
