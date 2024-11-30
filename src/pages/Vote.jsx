@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { Table, Button, Typography, Modal, Radio, Form, message } from "antd";
+import {
+  Table,
+  Button,
+  Typography,
+  Modal,
+  Radio,
+  Form,
+  Input,
+  message,
+} from "antd";
 
 const { Title } = Typography;
 
@@ -11,6 +20,7 @@ const Vote = () => {
       description: "Description for Topic 1",
       status: "active",
       voted: null,
+      comment: "",
     },
     {
       id: 2,
@@ -18,6 +28,7 @@ const Vote = () => {
       description: "Description for Topic 2",
       status: "inactive",
       voted: null,
+      comment: "",
     },
     // Add more topics as needed
   ]);
@@ -33,7 +44,9 @@ const Vote = () => {
   const handleOk = () => {
     form.validateFields().then((values) => {
       const updatedTopics = voteTopics.map((topic) =>
-        topic.id === selectedTopic.id ? { ...topic, voted: values.vote } : topic
+        topic.id === selectedTopic.id
+          ? { ...topic, voted: values.vote, comment: values.comment }
+          : topic
       );
       setVoteTopics(updatedTopics);
       setIsModalVisible(false);
@@ -43,6 +56,7 @@ const Vote = () => {
 
   const handleCancel = () => {
     setIsModalVisible(false);
+    form.resetFields(); // Reset the form fields when the modal is closed
   };
 
   const columns = [
@@ -83,7 +97,16 @@ const Vote = () => {
         dataSource={voteTopics}
         rowKey="id"
         expandable={{
-          expandedRowRender: (record) => <p>{record.description}</p>,
+          expandedRowRender: (record) => (
+            <div>
+              <p>
+                <strong>Description:</strong> {record.description}
+              </p>
+              <p>
+                <strong>Comment:</strong> {record.comment}
+              </p>
+            </div>
+          ),
         }}
       />
 
@@ -102,6 +125,13 @@ const Vote = () => {
               <Radio value={true}>Vote</Radio>
               <Radio value={false}>Not Vote</Radio>
             </Radio.Group>
+          </Form.Item>
+          <Form.Item
+            name="comment"
+            label="Comment"
+            rules={[{ required: true, message: "Please input your comment!" }]}
+          >
+            <Input.TextArea placeholder="Enter your comment" />
           </Form.Item>
         </Form>
       </Modal>

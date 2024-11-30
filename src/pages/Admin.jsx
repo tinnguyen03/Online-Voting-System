@@ -5,13 +5,12 @@ import {
   Button,
   Table,
   message,
-  Select,
+  DatePicker,
   Row,
   Col,
   Space,
 } from "antd";
-
-const { Option } = Select;
+import moment from "moment";
 
 const Admin = () => {
   const [voteTopics, setVoteTopics] = useState([]);
@@ -27,7 +26,7 @@ const Admin = () => {
               ...topic,
               name: values.topicName,
               description: values.description,
-              status: values.status,
+              deadline: values.deadline.format("YYYY-MM-DD"),
             }
           : topic
       );
@@ -40,7 +39,7 @@ const Admin = () => {
         id: Date.now(), // Unique ID for each topic
         name: values.topicName,
         description: values.description,
-        status: values.status,
+        deadline: values.deadline.format("YYYY-MM-DD"),
         votes: 0, // Initial votes
       };
       setVoteTopics([...voteTopics, newTopic]);
@@ -59,7 +58,7 @@ const Admin = () => {
     form.setFieldsValue({
       topicName: topic.name,
       description: topic.description,
-      status: topic.status,
+      deadline: moment(topic.deadline, "YYYY-MM-DD"),
     });
   };
 
@@ -77,27 +76,23 @@ const Admin = () => {
       render: (votes) => `${votes}%`,
     },
     {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
+      title: "Deadline",
+      dataIndex: "deadline",
+      key: "deadline",
+      render: (deadline) => moment(deadline).format("YYYY-MM-DD"),
     },
     {
       title: "Actions",
       key: "actions",
       render: (text, record) => (
-        <>
-          <Space size="small">
-            <Button type="dashed" onClick={() => onEdit(record)}>
-              Add Options
-            </Button>
-            <Button type="primary" onClick={() => onEdit(record)}>
-              Edit
-            </Button>
-            <Button danger onClick={() => onDelete(record.id)}>
-              Delete
-            </Button>
-          </Space>
-        </>
+        <Space size="small">
+          <Button type="primary" onClick={() => onEdit(record)}>
+            Edit
+          </Button>
+          <Button danger onClick={() => onDelete(record.id)}>
+            Delete
+          </Button>
+        </Space>
       ),
     },
   ];
@@ -113,7 +108,7 @@ const Admin = () => {
         initialValues={{
           topicName: editTopic ? editTopic.name : "",
           description: editTopic ? editTopic.description : "",
-          status: editTopic ? editTopic.status : "active",
+          deadline: editTopic ? moment(editTopic.deadline, "YYYY-MM-DD") : null,
         }}
         onFinish={onFinish}
         layout="vertical"
@@ -142,14 +137,14 @@ const Admin = () => {
           </Col>
           <Col span={12}>
             <Form.Item
-              label="Status"
-              name="status"
-              rules={[{ required: true, message: "Please select the status!" }]}
+              label="Deadline"
+              name="deadline"
+              rules={[{ required: true, message: "Please select a deadline!" }]}
             >
-              <Select placeholder="Select status" style={{ height: "54px" }}>
-                <Option value="active">Active</Option>
-                <Option value="inactive">Inactive</Option>
-              </Select>
+              <DatePicker
+                placeholder="Select deadline"
+                style={{ width: "100%" }}
+              />
             </Form.Item>
           </Col>
         </Row>
