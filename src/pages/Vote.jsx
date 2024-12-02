@@ -95,7 +95,7 @@ const Vote = () => {
   ];
 
   const handleLogout = () => {
-    navigate("/login");
+    navigate("/");
     message.success("Logged out successfully!");
   };
 
