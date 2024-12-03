@@ -39,6 +39,8 @@ public class UserVoteServiceImpl implements UserVoteService {
         Vote vote = voteRepository.findById(userVoteRequestDTO.getVoteId())
                 .orElseThrow(() -> new RuntimeException("Vote not found with id: " + userVoteRequestDTO.getVoteId()));
         if(vote.getExpiresAt().toInstant().isBefore(new Date().toInstant())) {
+            vote.setStatus("expired");
+            voteRepository.save(vote);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vote has expired");
         }
         userVote.setVote(vote);
@@ -47,9 +49,9 @@ public class UserVoteServiceImpl implements UserVoteService {
         Option option = optionRepository.findById(userVoteRequestDTO.getOptionId())
                 .orElseThrow(() -> new RuntimeException("Option not found with id: " + userVoteRequestDTO.getOptionId()));
         option.setVotesCount(option.getVotesCount() + 1);
-        optionRepository.save(option);
+        Option savedOption = optionRepository.save(option);
 
-        userVote.setOption(option);
+        userVote.setOption(savedOption);
         UserVote savedUserVote = userVoteRepository.save(userVote);
 
         return new UserVoteResponseDTO(savedUserVote.getUserVoteId(), savedUserVote.getVote().getVoteId(), savedUserVote.getUser().getUserId(), savedUserVote.getOption().getOptionId(), savedUserVote.getVotedAt());
