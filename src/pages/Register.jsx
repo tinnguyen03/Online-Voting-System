@@ -7,15 +7,13 @@ const { Title } = Typography;
 
 const Register = () => {
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
 
   const onFinish = async (values) => {
     try {
       const data = await authService.register(
         values.name,
         values.email,
-        values.password,
-        token
+        values.password
       );
       message.success("Registration successful! Redirecting to login...");
       console.log("User registered:", data);
