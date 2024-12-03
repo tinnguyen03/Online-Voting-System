@@ -58,6 +58,7 @@ public class VoteServiceImpl implements VoteService {
         voteResponseDTO.setVoteId(savedVote.getVoteId());
         voteResponseDTO.setTitle(savedVote.getTitle());
         voteResponseDTO.setDescription(savedVote.getDescription());
+        voteResponseDTO.setStatus(savedVote.getStatus());
         voteResponseDTO.setExpiresAt(savedVote.getExpiresAt());
         voteResponseDTO.setCreatedAt(savedVote.getCreatedAt());
         voteResponseDTO.setCreatedBy(savedVote.getCreatedBy().getUserId());
