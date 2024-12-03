@@ -14,13 +14,16 @@ import {
   EyeInvisibleOutlined,
   EyeOutlined,
 } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const { Header } = Layout;
 const { Title, Text } = Typography;
 
-const HeaderComponent = ({ onLogout, userType }) => {
+const HeaderComponent = ({ userType }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
+  const navigate = useNavigate(); // Initialize navigate
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -32,6 +35,19 @@ const HeaderComponent = ({ onLogout, userType }) => {
 
   const togglePasswordVisibility = () => {
     setIsPasswordVisible(!isPasswordVisible);
+  };
+
+  const onLogout = () => {
+    // Clear token from local storage
+    localStorage.removeItem("token");
+
+    // Show a logout success message (optional)
+    Modal.success({
+      content: "You have been logged out successfully!",
+    });
+
+    // Redirect to login page
+    navigate("/login");
   };
 
   return (

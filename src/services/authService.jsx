@@ -11,13 +11,21 @@ const login = async (email, password) => {
   }
 };
 
-const register = async (name, email, password) => {
+const register = async (name, email, password, token) => {
   try {
-    const response = await axios.post(`${BASE_URL}/register`, {
-      name,
-      email,
-      password,
-    });
+    const response = await axios.post(
+      `${BASE_URL}/register`,
+      {
+        name,
+        email,
+        password,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     return response.data;
   } catch (error) {
     throw error.response?.data?.message || "Registration failed!";

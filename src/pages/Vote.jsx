@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   Button,
@@ -41,6 +41,15 @@ const Vote = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [form] = Form.useForm();
+
+  // Redirect the user if no token is found in localStorage
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      message.error("You must be logged in to access this page.");
+      navigate("/login"); // Redirect to login page if no token
+    }
+  }, [navigate]);
 
   const showModal = (topic) => {
     setSelectedTopic(topic);
@@ -96,8 +105,9 @@ const Vote = () => {
   ];
 
   const handleLogout = () => {
-    navigate("/");
+    localStorage.removeItem("token");
     message.success("Logged out successfully!");
+    navigate("/login"); // Redirect to login after logout
   };
 
   return (
@@ -126,7 +136,7 @@ const Vote = () => {
 
           <Modal
             title="Vote"
-            visible={isModalVisible}
+            open={isModalVisible}
             onOk={handleOk}
             onCancel={handleCancel}
           >

@@ -1,17 +1,34 @@
 import React from "react";
-import { Form, Input, Button, Typography } from "antd";
-import { Link } from "react-router-dom"; // Import Link component
+import { Form, Input, Button, Typography, message } from "antd";
+import { useNavigate, Link } from "react-router-dom";
+import authService from "../services/authService"; // Import authService
 
 const { Title } = Typography;
 
 const Register = () => {
-  const onFinish = (values) => {
-    console.log("Form submitted successfully:", values);
-    // Add logic for submitting the form to your backend
+  const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+
+  const onFinish = async (values) => {
+    try {
+      const data = await authService.register(
+        values.name,
+        values.email,
+        values.password,
+        token
+      );
+      message.success("Registration successful! Redirecting to login...");
+      console.log("User registered:", data);
+
+      navigate("/login");
+    } catch (error) {
+      console.error("Registration failed:", error);
+      message.error(error);
+    }
   };
 
   const onFinishFailed = (errorInfo) => {
-    console.log("Form submission failed:", errorInfo);
+    console.log("Registration failed:", errorInfo);
   };
 
   return (
@@ -21,11 +38,11 @@ const Register = () => {
       <Title>Register</Title>
       <Form
         name="register"
-        layout="vertical"
+        initialValues={{ remember: true }}
         onFinish={onFinish}
         onFinishFailed={onFinishFailed}
+        layout="vertical"
       >
-        {/* Name Field */}
         <Form.Item
           label="Name"
           name="name"
@@ -34,28 +51,30 @@ const Register = () => {
           <Input placeholder="Enter your name" />
         </Form.Item>
 
-        {/* Email Field */}
         <Form.Item
           label="Email"
           name="email"
-          rules={[
-            { required: true, message: "Please input your email!" },
-            { type: "email", message: "Please enter a valid email!" },
-          ]}
+          rules={[{ required: true, message: "Please input your email!" }]}
         >
           <Input placeholder="Enter your email" />
         </Form.Item>
 
-        {/* Submit Button */}
+        <Form.Item
+          label="Password"
+          name="password"
+          rules={[{ required: true, message: "Please input your password!" }]}
+        >
+          <Input.Password placeholder="Enter your password" />
+        </Form.Item>
+
         <Form.Item>
           <Button type="primary" htmlType="submit" block>
             Register
           </Button>
         </Form.Item>
 
-        {/* Already have an account link */}
         <Form.Item>
-          <Link to="/login">Already have an account?</Link>
+          <Link to="/login">Already have an account? Login</Link>
         </Form.Item>
       </Form>
     </div>
