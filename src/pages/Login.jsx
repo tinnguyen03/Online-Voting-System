@@ -1,33 +1,23 @@
 import React from "react";
 import { Form, Input, Button, Typography, message } from "antd";
-import { useNavigate, Link } from "react-router-dom"; // Import Link component
+import { useNavigate, Link } from "react-router-dom";
+import authService from "../services/authService"; // Import authService
 
 const { Title } = Typography;
 
 const Login = () => {
   const navigate = useNavigate();
 
-  const onFinish = (values) => {
-    const adminUsername = "admin";
-    const adminPassword = "admin";
-    const voterUsername = "voter";
-    const voterPassword = "voter";
+  const onFinish = async (values) => {
+    try {
+      const data = await authService.login(values.email, values.password);
 
-    if (
-      values.username === adminUsername &&
-      values.password === adminPassword
-    ) {
-      message.success("Admin Login successful! Redirecting to Admin page...");
-      navigate("/admin"); // Redirect to admin page
-    } else if (
-      values.username === voterUsername &&
-      values.password === voterPassword
-    ) {
-      message.success("Voter Login successful! Redirecting to Vote page...");
-      navigate("/vote"); // Redirect to voter voting page
-    } else {
-      console.log("Login failed:", values);
-      message.error("Invalid username or password!");
+      message.success("Login successful! Redirecting...");
+      localStorage.setItem("token", data.tokenDto.accessToken);
+
+      navigate("/vote");
+    } catch (error) {
+      message.error(error);
     }
   };
 
@@ -48,11 +38,11 @@ const Login = () => {
         layout="vertical"
       >
         <Form.Item
-          label="Username"
-          name="username"
-          rules={[{ required: true, message: "Please input your username!" }]}
+          label="Email"
+          name="email"
+          rules={[{ required: true, message: "Please input your email!" }]}
         >
-          <Input placeholder="Enter your username" />
+          <Input placeholder="Enter your email" />
         </Form.Item>
 
         <Form.Item
@@ -69,7 +59,6 @@ const Login = () => {
           </Button>
         </Form.Item>
 
-        {/* Don't have an account yet link */}
         <Form.Item>
           <Link to="/register">Don't have an account yet?</Link>
         </Form.Item>
