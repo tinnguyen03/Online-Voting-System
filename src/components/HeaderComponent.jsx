@@ -62,7 +62,7 @@ const HeaderComponent = ({ onLogout, userType }) => {
         onCancel={handleCancel}
         footer={null}
         centered
-        bodyStyle={{ padding: "24px 24px" }}
+        styles={{ padding: "24px 24px" }}
       >
         <div style={{ textAlign: "center" }}>
           <Avatar
