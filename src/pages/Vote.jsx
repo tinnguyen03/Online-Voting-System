@@ -11,6 +11,7 @@ import {
   Layout,
 } from "antd";
 import HeaderComponent from "../components/HeaderComponent";
+import FooterComponent from "../components/FooterComponent";
 import { useNavigate } from "react-router-dom";
 
 const { Title } = Typography;
@@ -154,6 +155,7 @@ const Vote = () => {
           </Modal>
         </div>
       </Content>
+      <FooterComponent />
     </Layout>
   );
 };

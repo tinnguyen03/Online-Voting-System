@@ -13,6 +13,7 @@ import {
 } from "antd";
 import moment from "moment";
 import HeaderComponent from "../components/HeaderComponent";
+import FooterComponent from "../components/FooterComponent";
 import { useNavigate } from "react-router-dom";
 
 const { Content } = Layout;
@@ -197,6 +198,7 @@ const Admin = () => {
           />
         </div>
       </Content>
+      <FooterComponent />
     </Layout>
   );
 };
