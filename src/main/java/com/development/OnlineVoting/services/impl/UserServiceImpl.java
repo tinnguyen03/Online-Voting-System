@@ -4,6 +4,7 @@ import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.development.OnlineVoting.dtos.Auth.AuthRequestDto;
 import com.development.OnlineVoting.dtos.Auth.AuthResponseDto;
 import com.development.OnlineVoting.dtos.Auth.TokenDto;
+import com.development.OnlineVoting.dtos.User.CustomUserDetails;
 import com.development.OnlineVoting.dtos.User.UserRequestDTO;
 import com.development.OnlineVoting.dtos.User.UserResponseDTO;
 import com.development.OnlineVoting.entities.User;
@@ -33,45 +34,41 @@ public class UserServiceImpl implements UserService {
     private JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
 
-    @Autowired
     public UserServiceImpl(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
     }
+
     @Override
     public AuthResponseDto login(AuthRequestDto authRequestDto) {
-        try {
-
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            authRequestDto.getEmail(),
-                            authRequestDto.getPassword()
-                    )
-            );
-            User user = userRepository.findByEmail(authRequestDto.getEmail());
-            if (user == null) {
-                throw new BadCredentialsException("Invalid email or password");
-            }
-            UserResponseDTO userResponseDTO = new UserResponseDTO();
-            userResponseDTO.setUserId(user.getUserId());
-            userResponseDTO.setName(user.getName());
-            userResponseDTO.setEmail(user.getEmail());
-            userResponseDTO.setRole(user.getRole());
-            userResponseDTO.setStatus(user.getStatus());
-            userResponseDTO.setBannedReason(user.getBannedReason());
-            userResponseDTO.setCreatedAt(user.getCreatedAt());
-
-            String token = jwtTokenProvider.generateToken(authentication);
-
-            return new AuthResponseDto(userResponseDTO, new TokenDto(token));
-
-        } catch (BadCredentialsException e) {
-            throw new RuntimeException("Invalid email or password", e);
+        User user = userRepository.findByEmail(authRequestDto.getEmail());
+        if (user == null) {
+            throw new BadCredentialsException("User not found");
         }
+
+        if (!BCrypt.verifyer().verify(authRequestDto.getPassword().toCharArray(), user.getPasswordHash()).verified) {
+            throw new BadCredentialsException("Wrong password");
+        }
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(authRequestDto.getEmail(), authRequestDto.getPassword()));
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String token = jwtTokenProvider.generateToken((CustomUserDetails) authentication.getPrincipal());
+        AuthResponseDto authResponseDto = new AuthResponseDto();
+
+        UserResponseDTO userResponseDTO = new UserResponseDTO();
+        userResponseDTO.setUserId(user.getUserId());
+        userResponseDTO.setName(user.getName());
+        userResponseDTO.setEmail(user.getEmail());
+        userResponseDTO.setRole(user.getRole());
+        userResponseDTO.setStatus(user.getStatus());
+        userResponseDTO.setBannedReason(user.getBannedReason());
+        userResponseDTO.setCreatedAt(user.getCreatedAt());
+
+        authResponseDto.setUserResponseDTO(userResponseDTO);
+        authResponseDto.setTokenDto(new TokenDto(token));
+        return authResponseDto;
     }
-
-
-
-
     @Override
     public UserResponseDTO createUser(UserRequestDTO userRequestDTO) {
         User user = new User();
@@ -135,5 +132,11 @@ public class UserServiceImpl implements UserService {
         user.setStatus("Banned");
         user.setBannedReason(banned_reason);
         userRepository.save(user);
+    }
+
+    @Override
+    public UserResponseDTO getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email);
+        return new UserResponseDTO(user.getUserId(), user.getName(), user.getEmail(), user.getRole(), user.getStatus(), user.getBannedReason(), user.getCreatedAt());
     }
 }

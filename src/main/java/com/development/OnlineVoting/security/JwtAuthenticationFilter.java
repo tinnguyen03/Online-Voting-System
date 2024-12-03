@@ -1,5 +1,7 @@
 package com.development.OnlineVoting.security;
 
+import com.development.OnlineVoting.services.UserService;
+import com.development.OnlineVoting.services.impl.UserDetailServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,29 +25,29 @@ import java.io.IOException;
 @NoArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private JwtTokenProvider jwtTokenProvider;
-    private UserDetailsService userDetailsService;
+
+    private UserDetailServiceImpl customUserDetailsService;
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String token = getTokenFromRequest(request);
+        try{
+            String token = getTokenFromRequest(request);
 
-        if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
-            String username = jwtTokenProvider.getUsername(token);
+            if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
+                String username = jwtTokenProvider.getUsername(token);
 
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-
-            UsernamePasswordAuthenticationToken authenticationToken =
-                    new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities()
-                    );
-
-            authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                UserDetails userDetails = this.customUserDetailsService.loadUserByUsername(username);
+                if (userDetails != null) {
+                    UsernamePasswordAuthenticationToken
+                            authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+            }
+        }catch (Exception ex){
+            logger.error("Could not set user authentication in security context", ex);
         }
-
         filterChain.doFilter(request, response);
     }
 

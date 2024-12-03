@@ -17,5 +17,6 @@ public interface UserService {
     Page<UserResponseDTO> getAllUsers(int page, int limit);
     UserResponseDTO updateUser(UUID userId, UserRequestDTO userRequestDTO);
     void deleteUser(UUID userId, String banned_reason);
+    UserResponseDTO getUserByEmail(String email);
 
 }

@@ -1,5 +1,6 @@
 package com.development.OnlineVoting.security;
 
+import com.development.OnlineVoting.dtos.User.CustomUserDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -21,8 +22,8 @@ public class JwtTokenProvider {
     @Value("${app.jwt-expiration-milliseconds}")
     private long jwtExpirationDate; // Changed to long
 
-    public String generateToken(Authentication authentication) {
-        String username = authentication.getName();
+    public String generateToken(CustomUserDetails authentication) {
+        String username = authentication.getUsername();
         Date currentDate = new Date();
         Date expireDate = new Date(currentDate.getTime() + jwtExpirationDate);
         return Jwts.builder()
@@ -42,7 +43,7 @@ public class JwtTokenProvider {
                 .verifyWith(key())
                 .build()
                 .parseSignedClaims(token)
-                .getPayload(); // Get claims body directly
+                .getPayload();
         return claims.getSubject();
     }
 
@@ -52,7 +53,7 @@ public class JwtTokenProvider {
                     .verifyWith(key())
                     .build()
                     .parseSignedClaims(token);
-            return !claimsJws.getPayload().getExpiration().before(new Date()); // Check expiration
+            return !claimsJws.getPayload().getExpiration().before(new Date());
         } catch (Exception e) {
             return false;
         }
