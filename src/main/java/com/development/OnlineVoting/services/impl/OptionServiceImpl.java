@@ -24,7 +24,7 @@ public class OptionServiceImpl implements OptionService {
     @Override
     public OptionResponseDTO CreateOption(OptionRequestDTO optionRequestDTO) {
         Vote vote = voteRepository.findById(optionRequestDTO.getVoteId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, ("Vote not found with id: " + optionRequestDTO.getVoteId()));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, ("Vote not found with id: " + optionRequestDTO.getVoteId())));
         Option option = new Option();
         option.setVote(vote);
         option.setContent(optionRequestDTO.getContent());
