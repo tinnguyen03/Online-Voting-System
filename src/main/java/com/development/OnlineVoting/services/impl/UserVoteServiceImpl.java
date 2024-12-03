@@ -37,7 +37,7 @@ public class UserVoteServiceImpl implements UserVoteService {
     public UserVoteResponseDTO UserVote(UserVoteRequestDTO userVoteRequestDTO) {
         UserVote userVote = new UserVote();
         Vote vote = voteRepository.findById(userVoteRequestDTO.getVoteId())
-                .orElseThrow(() -> new RuntimeException("Vote not found with id: " + userVoteRequestDTO.getVoteId()));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vote not found with id: " + userVoteRequestDTO.getVoteId()));
         if(vote.getExpiresAt().toInstant().isBefore(new Date().toInstant())) {
             vote.setStatus("expired");
             voteRepository.save(vote);
@@ -45,9 +45,9 @@ public class UserVoteServiceImpl implements UserVoteService {
         }
         userVote.setVote(vote);
         userVote.setUser(userRepository.findById(userVoteRequestDTO.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userVoteRequestDTO.getUserId())));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with id: " + userVoteRequestDTO.getUserId())));
         Option option = optionRepository.findById(userVoteRequestDTO.getOptionId())
-                .orElseThrow(() -> new RuntimeException("Option not found with id: " + userVoteRequestDTO.getOptionId()));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Option not found with id: " + userVoteRequestDTO.getOptionId()));
         option.setVotesCount(option.getVotesCount() + 1);
         Option savedOption = optionRepository.save(option);
 

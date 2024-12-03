@@ -17,7 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashSet;
 import java.util.List;
@@ -40,7 +42,7 @@ public class VoteServiceImpl implements VoteService {
         vote.setExpiresAt(voteRequestDTO.getExpiresAt());
 
         vote.setCreatedBy(userRepository.findById(voteRequestDTO.getCreatedBy())
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + voteRequestDTO.getCreatedBy())));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with id: " + voteRequestDTO.getCreatedBy())));
 
         Vote savedVote = voteRepository.save(vote);
         Set<Option> options = new HashSet<>();
@@ -66,7 +68,7 @@ public class VoteServiceImpl implements VoteService {
     @Override
     public VoteResponseDTO GetVoteById(UUID voteId) {
         Vote savedVote = voteRepository.findById(voteId)
-                .orElseThrow(() -> new RuntimeException("Vote not found with id: " + voteId));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vote not found with id: " + voteId));
         VoteResponseDTO voteResponseDTO = new VoteResponseDTO();
         voteResponseDTO.setVoteId(savedVote.getVoteId());
         voteResponseDTO.setTitle(savedVote.getTitle());
@@ -97,7 +99,7 @@ public class VoteServiceImpl implements VoteService {
     @Override
     public VoteOnlyResponseDTO UpdateVote(UUID voteId, VoteDetailRequestDTO voteDetailRequestDto) {
         Vote vote = voteRepository.findById(voteId)
-                .orElseThrow(() -> new RuntimeException("Vote not found with id: " + voteId));
+                .orElseThrow(() -> new ResponseStatusException( HttpStatus.NOT_FOUND,"Vote not found with id: " + voteId));
         vote.setTitle(voteDetailRequestDto.getTitle());
         vote.setDescription(voteDetailRequestDto.getDescription());
         vote.setExpiresAt(voteDetailRequestDto.getExpiresAt());
@@ -108,7 +110,7 @@ public class VoteServiceImpl implements VoteService {
     @Override
     public void DeleteVote(UUID voteId) {
         Vote vote = voteRepository.findById(voteId)
-                .orElseThrow(() -> new RuntimeException("Vote not found with id: " + voteId));
+                .orElseThrow(() -> new ResponseStatusException( HttpStatus.NOT_FOUND,"Vote not found with id: " + voteId));
         vote.setStatus("deleted");
         voteRepository.save(vote);
     }

@@ -15,12 +15,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -42,11 +44,11 @@ public class UserServiceImpl implements UserService {
     public AuthResponseDto login(AuthRequestDto authRequestDto) {
         User user = userRepository.findByEmail(authRequestDto.getEmail());
         if (user == null) {
-            throw new BadCredentialsException("User not found");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,("User not found"));
         }
 
         if (!BCrypt.verifyer().verify(authRequestDto.getPassword().toCharArray(), user.getPasswordHash()).verified) {
-            throw new BadCredentialsException("Wrong password");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,("Wrong password"));
         }
 
         Authentication authentication = authenticationManager.authenticate(
@@ -71,6 +73,9 @@ public class UserServiceImpl implements UserService {
     }
     @Override
     public UserResponseDTO createUser(UserRequestDTO userRequestDTO) {
+        if (userRepository.existsByEmail(userRequestDTO.getEmail())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User already exists with email: " + userRequestDTO.getEmail());
+        }
         User user = new User();
         user.setName(userRequestDTO.getName());
         user.setEmail(userRequestDTO.getEmail());
@@ -90,7 +95,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDTO getUserById(UUID userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+                .orElseThrow(() -> new ResponseStatusException( HttpStatus.NOT_FOUND,"User not found with id: " + userId));
         UserResponseDTO userResponseDTO = new UserResponseDTO();
         userResponseDTO.setUserId(user.getUserId());
         userResponseDTO.setName(user.getName());
@@ -128,7 +133,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUser(UUID userId, String banned_reason) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+                .orElseThrow(() -> new ResponseStatusException( HttpStatus.NOT_FOUND,"User not found with id: " + userId));
         user.setStatus("Banned");
         user.setBannedReason(banned_reason);
         userRepository.save(user);
@@ -137,6 +142,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDTO getUserByEmail(String email) {
         User user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with email: " + email);
+        }
         return new UserResponseDTO(user.getUserId(), user.getName(), user.getEmail(), user.getRole(), user.getStatus(), user.getBannedReason(), user.getCreatedAt());
     }
 }
