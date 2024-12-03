@@ -10,13 +10,27 @@ const Login = () => {
 
   const onFinish = async (values) => {
     try {
+      // Call the login function to authenticate the user
       const data = await authService.login(values.email, values.password);
 
-      message.success("Login successful! Redirecting...");
-      localStorage.setItem("token", data.tokenDto.accessToken);
+      // Extract user data and token
+      const user = data.userResponseDTO;
+      const token = data.tokenDto.accessToken;
 
-      navigate("/vote");
+      // Store token in localStorage
+      localStorage.setItem("token", token);
+
+      // Display success message
+      message.success("Login successful! Redirecting...");
+
+      // Check the role and redirect accordingly
+      if (user.role === "Admin") {
+        navigate("/admin");
+      } else {
+        navigate("/vote");
+      }
     } catch (error) {
+      // Display error message
       message.error(error);
     }
   };

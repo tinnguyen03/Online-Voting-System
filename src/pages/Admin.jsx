@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Form,
   Input,
@@ -15,6 +15,7 @@ import moment from "moment";
 import HeaderComponent from "../components/HeaderComponent";
 import FooterComponent from "../components/FooterComponent";
 import { useNavigate } from "react-router-dom";
+import voteService from "../services/voteService"; // Import voteService
 
 const { Content } = Layout;
 
@@ -24,9 +25,20 @@ const Admin = () => {
   const [form] = Form.useForm(); // Create a form instance
   const navigate = useNavigate();
 
-  const onFinish = (values) => {
+  useEffect(() => {
+    // Check if the token exists in localStorage
+    const token = localStorage.getItem("token");
+    if (!token) {
+      message.error("You are not authorized. Please log in.");
+      navigate("/login"); // Redirect to login if no token
+    }
+  }, [navigate]);
+
+  const onFinish = async (values) => {
+    const token = localStorage.getItem("token");
+
     if (editTopic) {
-      // Editing an existing topic
+      // Edit existing topic
       const updatedTopics = voteTopics.map((topic) =>
         topic.id === editTopic.id
           ? {
@@ -41,16 +53,23 @@ const Admin = () => {
       setEditTopic(null); // Reset edit mode
       message.success("Vote topic updated successfully!");
     } else {
-      // Adding a new topic
-      const newTopic = {
-        id: Date.now(), // Unique ID for each topic
-        name: values.topicName,
-        description: values.description,
-        deadline: values.deadline.format("YYYY-MM-DD"),
-        votes: 0, // Initial votes
-      };
-      setVoteTopics([...voteTopics, newTopic]);
-      message.success("Vote topic created successfully!");
+      // Create new vote topic
+      try {
+        const newTopic = {
+          title: values.topicName,
+          description: values.description,
+          expiresAt: values.deadline.format("YYYY-MM-DD"),
+          createdBy: "ad1d3eec-2898-436c-99e7-e2b0255d55b3", // example, replace with actual user id
+          options: [{ content: "test" }], // Example options, modify as needed
+        };
+
+        // Call createVote API from voteService
+        const createdVote = await voteService.createVote(token, newTopic);
+        setVoteTopics([...voteTopics, createdVote]); // Add new topic to the table
+        message.success("Vote topic created successfully!");
+      } catch (error) {
+        message.error(error);
+      }
     }
     form.resetFields(); // Reset the form fields
   };
@@ -110,8 +129,9 @@ const Admin = () => {
   ];
 
   const handleLogout = () => {
-    navigate("/");
+    localStorage.removeItem("token");
     message.success("Logged out successfully!");
+    navigate("/login"); // Redirect to login after logout
   };
 
   return (
