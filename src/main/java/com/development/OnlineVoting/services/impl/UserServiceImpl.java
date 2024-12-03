@@ -11,6 +11,9 @@ import com.development.OnlineVoting.repositories.UserRepository;
 import com.development.OnlineVoting.security.JwtTokenProvider;
 import com.development.OnlineVoting.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,8 +31,12 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
+    private final AuthenticationManager authenticationManager;
+
     @Autowired
-    private AuthenticationManager authenticationManager;
+    public UserServiceImpl(AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
+    }
     @Override
     public AuthResponseDto login(AuthRequestDto authRequestDto) {
         try {
@@ -40,7 +47,6 @@ public class UserServiceImpl implements UserService {
                             authRequestDto.getPassword()
                     )
             );
-            SecurityContextHolder.getContext().setAuthentication(authentication);
             User user = userRepository.findByEmail(authRequestDto.getEmail());
             if (user == null) {
                 throw new BadCredentialsException("Invalid email or password");
@@ -100,8 +106,21 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponseDTO> getAllUsers() {
-        return null;
+    public Page<UserResponseDTO> getAllUsers(int page, int limit) {
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<User> userPage = userRepository.findAll(pageable);
+
+        return userPage.map(user -> {
+            UserResponseDTO userResponseDTO = new UserResponseDTO();
+            userResponseDTO.setUserId(user.getUserId());
+            userResponseDTO.setName(user.getName());
+            userResponseDTO.setEmail(user.getEmail());
+            userResponseDTO.setRole(user.getRole());
+            userResponseDTO.setStatus(user.getStatus());
+            userResponseDTO.setBannedReason(user.getBannedReason());
+            userResponseDTO.setCreatedAt(user.getCreatedAt());
+            return userResponseDTO;
+        });
     }
 
     @Override
@@ -110,7 +129,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUser(UUID userId) {
-
+    public void deleteUser(UUID userId, String banned_reason) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        user.setStatus("Banned");
+        user.setBannedReason(banned_reason);
+        userRepository.save(user);
     }
 }

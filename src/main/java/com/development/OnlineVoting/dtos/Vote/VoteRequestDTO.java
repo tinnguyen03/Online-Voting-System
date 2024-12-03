@@ -4,6 +4,7 @@ import com.development.OnlineVoting.dtos.Option.OptionCreateDTO;
 import lombok.*;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 @Getter
@@ -17,5 +18,5 @@ public class VoteRequestDTO {
     private String description;
     private Date expiresAt;
     private UUID createdBy;
-    Set<OptionCreateDTO> options;
+    List<OptionCreateDTO> options;
 }
