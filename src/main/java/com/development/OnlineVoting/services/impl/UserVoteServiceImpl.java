@@ -14,8 +14,11 @@ import com.development.OnlineVoting.repositories.VoteRepository;
 import com.development.OnlineVoting.services.UserService;
 import com.development.OnlineVoting.services.UserVoteService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,8 +36,12 @@ public class UserVoteServiceImpl implements UserVoteService {
     @Override
     public UserVoteResponseDTO UserVote(UserVoteRequestDTO userVoteRequestDTO) {
         UserVote userVote = new UserVote();
-        userVote.setVote(voteRepository.findById(userVoteRequestDTO.getVoteId())
-                .orElseThrow(() -> new RuntimeException("Vote not found with id: " + userVoteRequestDTO.getVoteId())));
+        Vote vote = voteRepository.findById(userVoteRequestDTO.getVoteId())
+                .orElseThrow(() -> new RuntimeException("Vote not found with id: " + userVoteRequestDTO.getVoteId()));
+        if(vote.getExpiresAt().toInstant().isBefore(new Date().toInstant())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vote has expired");
+        }
+        userVote.setVote(vote);
         userVote.setUser(userRepository.findById(userVoteRequestDTO.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userVoteRequestDTO.getUserId())));
         Option option = optionRepository.findById(userVoteRequestDTO.getOptionId())
