@@ -13,31 +13,15 @@ import {
 import HeaderComponent from "../components/HeaderComponent";
 import FooterComponent from "../components/FooterComponent";
 import { useNavigate } from "react-router-dom";
+import voteService from "../services/voteService"; // Import voteService
+import moment from "moment";
 
 const { Title } = Typography;
 const { Content } = Layout;
 
 const Vote = () => {
   const navigate = useNavigate();
-  const [voteTopics, setVoteTopics] = useState([
-    {
-      id: 1,
-      name: "Topic 1",
-      description: "Description for Topic 1",
-      status: "active",
-      voted: null,
-      comment: "",
-    },
-    {
-      id: 2,
-      name: "Topic 2",
-      description: "Description for Topic 2",
-      status: "inactive",
-      voted: null,
-      comment: "",
-    },
-    // Add more topics as needed
-  ]);
+  const [voteTopics, setVoteTopics] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [form] = Form.useForm();
@@ -48,6 +32,29 @@ const Vote = () => {
     if (!token) {
       message.error("You must be logged in to access this page.");
       navigate("/login"); // Redirect to login page if no token
+    } else {
+      // Call the API to fetch all vote topics when the component loads
+      const fetchVoteTopics = async () => {
+        try {
+          const response = await voteService.getVotes(token, 0, 10);
+          // Map the response to a more accessible structure
+          const voteData = response.content.map((vote) => ({
+            id: vote.voteId, // Make 'id' field to match table data
+            name: vote.title,
+            description: vote.description,
+            status: vote.status,
+            createdAt: moment(vote.createdAt).format("YYYY-MM-DD HH:mm"), // Format createdAt
+            expiresAt: moment(vote.expiresAt).format("YYYY-MM-DD HH:mm"), // Format expiresAt
+            voted: null,
+            comment: "",
+          }));
+          setVoteTopics(voteData); // Set the fetched vote topics to the state
+        } catch (error) {
+          message.error("Failed to load vote topics!");
+        }
+      };
+
+      fetchVoteTopics();
     }
   }, [navigate]);
 
