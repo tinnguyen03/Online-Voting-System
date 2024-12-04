@@ -15,15 +15,23 @@ import moment from "moment";
 import HeaderComponent from "../components/HeaderComponent";
 import FooterComponent from "../components/FooterComponent";
 import { useNavigate } from "react-router-dom";
-import voteService from "../services/voteService"; // Import voteService
+import voteService from "../services/voteService";
+import userService from "../services/userService";
 
 const { Content } = Layout;
 
 const Admin = () => {
   const [voteTopics, setVoteTopics] = useState([]);
   const [editTopic, setEditTopic] = useState(null);
-  const [form] = Form.useForm(); // Create a form instance
-  const [isModalVisible, setIsModalVisible] = useState(false); // State to control modal visibility
+  const [form] = Form.useForm();
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isUserModalVisible, setIsUserModalVisible] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [userPagination, setUserPagination] = useState({
+    current: 1,
+    pageSize: 5,
+    total: 0,
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -119,6 +127,26 @@ const Admin = () => {
     setIsModalVisible(true); // Open the modal for editing
   };
 
+  const fetchUsers = async (page = 1, pageSize = 5) => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await userService.getUsers(token, page - 1, pageSize);
+      setUsers(response.content); // Set the fetched users to the state
+      setUserPagination({
+        current: page,
+        pageSize,
+        total: response.totalElements,
+      }); // Update pagination state
+      setIsUserModalVisible(true); // Open the user modal
+    } catch (error) {
+      message.error("Failed to load users!");
+    }
+  };
+
+  const handleUserTableChange = (pagination) => {
+    fetchUsers(pagination.current, pagination.pageSize);
+  };
+
   const columns = [
     {
       title: "Vote Topic Name",
@@ -162,6 +190,35 @@ const Admin = () => {
     },
   ];
 
+  const userColumns = [
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+    },
+    {
+      title: "Role",
+      dataIndex: "role",
+      key: "role",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+    },
+    {
+      title: "Created At",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (createdAt) => moment(createdAt).format("YYYY-MM-DD HH:mm"),
+    },
+  ];
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     message.success("Logged out successfully!");
@@ -177,6 +234,10 @@ const Admin = () => {
     form.resetFields(); // Reset the form fields when modal is closed
   };
 
+  const handleUserModalCancel = () => {
+    setIsUserModalVisible(false);
+  };
+
   return (
     <Layout>
       <HeaderComponent onLogout={handleLogout} userType="Admin" />
@@ -188,11 +249,18 @@ const Admin = () => {
           <Button type="primary" onClick={showModal}>
             Create Topic
           </Button>
+          <Button
+            type="default"
+            onClick={() => fetchUsers()}
+            style={{ marginLeft: "10px" }}
+          >
+            View Users
+          </Button>
 
           {/* Modal for creating or editing a vote topic */}
           <Modal
             title={editTopic ? "Edit Vote Topic" : "Create Vote Topic"}
-            open={isModalVisible}
+            visible={isModalVisible}
             onCancel={handleCancel}
             footer={null}
           >
@@ -278,6 +346,27 @@ const Admin = () => {
                 </Button>
               </Form.Item>
             </Form>
+          </Modal>
+
+          {/* Modal for displaying users */}
+          <Modal
+            title="Users"
+            visible={isUserModalVisible}
+            onCancel={handleUserModalCancel}
+            footer={null}
+          >
+            <Table
+              columns={userColumns}
+              dataSource={users}
+              rowKey="userId"
+              width={900}
+              pagination={{
+                current: userPagination.current,
+                pageSize: userPagination.pageSize,
+                total: userPagination.total,
+                onChange: handleUserTableChange,
+              }}
+            />
           </Modal>
 
           {/* Table of existing vote topics */}
