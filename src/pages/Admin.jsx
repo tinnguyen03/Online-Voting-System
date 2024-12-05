@@ -12,8 +12,8 @@ import {
   Modal,
 } from "antd";
 import moment from "moment";
-import HeaderComponent from "../components/HeaderComponent";
-import FooterComponent from "../components/FooterComponent";
+import HeaderComponent from "../components/header/HeaderComponent";
+import FooterComponent from "../components/footer/FooterComponent";
 import { useNavigate } from "react-router-dom";
 import voteService from "../services/voteService";
 import userService from "../services/userService";
