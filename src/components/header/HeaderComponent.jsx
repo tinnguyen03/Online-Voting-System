@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Layout,
   Avatar,
@@ -8,46 +8,85 @@ import {
   Space,
   Row,
   Col,
+  Form,
+  Input,
+  message,
 } from "antd";
-import {
-  UserOutlined,
-  EyeInvisibleOutlined,
-  EyeOutlined,
-} from "@ant-design/icons";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import moment from "moment";
+import { UserOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
+import userService from "../../services/userService"; // Import userService
 
 const { Header } = Layout;
 const { Title, Text } = Typography;
 
 const HeaderComponent = ({ userType }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [userInfo, setUserInfo] = useState({});
+  const [form] = Form.useForm();
+  const navigate = useNavigate();
 
-  const navigate = useNavigate(); // Initialize navigate
+  const showModal = async () => {
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user"));
+    const userId = user.userId;
 
-  const showModal = () => {
-    setIsModalVisible(true);
+    try {
+      const userData = await userService.getUsersbyId(token, userId);
+      setUserInfo(userData);
+      form.setFieldsValue({
+        name: userData.name,
+        email: userData.email,
+        password: "",
+      });
+      setIsModalVisible(true);
+    } catch (error) {
+      message.error("Failed to fetch user information!");
+    }
   };
 
   const handleCancel = () => {
     setIsModalVisible(false);
-  };
-
-  const togglePasswordVisibility = () => {
-    setIsPasswordVisible(!isPasswordVisible);
+    setIsEditing(false);
   };
 
   const onLogout = () => {
-    // Clear token from local storage
     localStorage.removeItem("token");
-
-    // Show a logout success message (optional)
+    localStorage.removeItem("user");
     Modal.success({
       content: "You have been logged out successfully!",
     });
-
-    // Redirect to login page
     navigate("/login");
+  };
+
+  const onEdit = () => {
+    setIsEditing(true);
+  };
+
+  const onFinish = async (values) => {
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user"));
+    const userId = user.userId;
+
+    try {
+      const updatedUser = {
+        name: values.name,
+        email: values.email,
+        password: values.password,
+      };
+
+      const updatedUserData = await userService.updateUser(
+        token,
+        userId,
+        updatedUser
+      );
+      setUserInfo(updatedUserData);
+      message.success("User information updated successfully!");
+      setIsEditing(false);
+    } catch (error) {
+      message.error("Failed to update user information!");
+    }
   };
 
   return (
@@ -89,59 +128,101 @@ const HeaderComponent = ({ userType }) => {
               marginBottom: "16px",
             }}
           />
-          <Title level={4}>{userType} User</Title>
-          <Text type="secondary">user@example.com</Text>
+          <Title level={4}>{userInfo.name}</Title>
+          <Text type="secondary">{userInfo.email}</Text>
         </div>
-        <Space
-          direction="vertical"
-          style={{ marginTop: "24px", width: "100%" }}
-        >
-          <Row>
-            <Col span={8}>
-              <Text strong>Phone:</Text>
-            </Col>
-            <Col span={16}>
-              <Text>+1234567890</Text>
-            </Col>
-          </Row>
-          <Row>
-            <Col span={8}>
-              <Text strong>Role:</Text>
-            </Col>
-            <Col span={16}>
-              <Text>{userType}</Text>
-            </Col>
-          </Row>
-          <Row>
-            <Col span={8}>
-              <Text strong>Status:</Text>
-            </Col>
-            <Col span={16}>
-              <Text>Active</Text>
-            </Col>
-          </Row>
-          <Row align="middle">
-            <Col span={8}>
-              <Text strong>Password:</Text>
-            </Col>
-            <Col span={16}>
-              <Space>
-                <Text>{isPasswordVisible ? "12345678" : "********"}</Text>
-                <Button
-                  type="link"
-                  icon={
-                    isPasswordVisible ? (
-                      <EyeOutlined />
-                    ) : (
-                      <EyeInvisibleOutlined />
-                    )
-                  }
-                  onClick={togglePasswordVisibility}
-                />
-              </Space>
-            </Col>
-          </Row>
-        </Space>
+        <Form form={form} onFinish={onFinish} layout="vertical">
+          <Space
+            direction="vertical"
+            style={{ marginTop: "24px", width: "100%" }}
+          >
+            <Row>
+              <Col span={8}>
+                <Text strong>Role:</Text>
+              </Col>
+              <Col span={16}>
+                <Text>{userInfo.role}</Text>
+              </Col>
+            </Row>
+            <Row>
+              <Col span={8}>
+                <Text strong>Status:</Text>
+              </Col>
+              <Col span={16}>
+                <Text>{userInfo.status}</Text>
+              </Col>
+            </Row>
+            {userInfo.status === "Banned" && (
+              <Row>
+                <Col span={8}>
+                  <Text strong>Banned Reason:</Text>
+                </Col>
+                <Col span={16}>
+                  <Text>{userInfo.bannedReason}</Text>
+                </Col>
+              </Row>
+            )}
+            <Row>
+              <Col span={8}>
+                <Text strong>Created At:</Text>
+              </Col>
+              <Col span={16}>
+                <Text>
+                  {moment(userInfo.createdAt).format("YYYY-MM-DD HH:mm")}
+                </Text>
+              </Col>
+            </Row>
+            {isEditing ? (
+              <>
+                <Form.Item
+                  label="Name"
+                  name="name"
+                  rules={[
+                    { required: true, message: "Please input your name!" },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  label="Email"
+                  name="email"
+                  rules={[
+                    { required: true, message: "Please input your email!" },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  label="Password"
+                  name="password"
+                  rules={[
+                    { required: true, message: "Please input your password!" },
+                  ]}
+                >
+                  <Input.Password />
+                </Form.Item>
+                <Form.Item>
+                  <Row gutter={16}>
+                    <Col span={12}>
+                      <Button type="primary" htmlType="submit" block>
+                        Save
+                      </Button>
+                    </Col>
+                    <Col span={12}>
+                      <Button type="default" onClick={handleCancel} block>
+                        Cancel
+                      </Button>
+                    </Col>
+                  </Row>
+                </Form.Item>
+              </>
+            ) : (
+              <Button type="primary" onClick={onEdit} block>
+                Edit
+              </Button>
+            )}
+          </Space>
+        </Form>
       </Modal>
     </Header>
   );

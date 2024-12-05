@@ -43,10 +43,9 @@ const Vote = () => {
             name: vote.title,
             description: vote.description,
             status: vote.status,
-            createdAt: moment(vote.createdAt).format("YYYY-MM-DD HH:mm"), // Format createdAt
-            expiresAt: moment(vote.expiresAt).format("YYYY-MM-DD HH:mm"), // Format expiresAt
+            createdAt: moment(vote.createdAt).format("YYYY-MM-DD"),
+            expiresAt: moment(vote.expiresAt).format("YYYY-MM-DD"),
             voted: null,
-            comment: "",
           }));
           setVoteTopics(voteData); // Set the fetched vote topics to the state
         } catch (error) {
@@ -66,9 +65,7 @@ const Vote = () => {
   const handleOk = () => {
     form.validateFields().then((values) => {
       const updatedTopics = voteTopics.map((topic) =>
-        topic.id === selectedTopic.id
-          ? { ...topic, voted: values.vote, comment: values.comment }
-          : topic
+        topic.id === selectedTopic.id ? { ...topic, voted: values.vote } : topic
       );
       setVoteTopics(updatedTopics);
       setIsModalVisible(false);
@@ -133,9 +130,6 @@ const Vote = () => {
                   <p>
                     <strong>Description:</strong> {record.description}
                   </p>
-                  <p>
-                    <strong>Comment:</strong> {record.comment}
-                  </p>
                 </div>
               ),
             }}
@@ -158,15 +152,6 @@ const Vote = () => {
                   <Radio value={true}>Vote</Radio>
                   <Radio value={false}>Not Vote</Radio>
                 </Radio.Group>
-              </Form.Item>
-              <Form.Item
-                name="comment"
-                label="Comment"
-                rules={[
-                  { required: true, message: "Please input your comment!" },
-                ]}
-              >
-                <Input.TextArea placeholder="Enter your comment" />
               </Form.Item>
             </Form>
           </Modal>
