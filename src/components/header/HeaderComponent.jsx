@@ -167,9 +167,7 @@ const HeaderComponent = ({ userType }) => {
                 <Text strong>Created At:</Text>
               </Col>
               <Col span={16}>
-                <Text>
-                  {moment(userInfo.createdAt).format("YYYY-MM-DD HH:mm")}
-                </Text>
+                <Text>{moment(userInfo.createdAt).format("YYYY-MM-DD")}</Text>
               </Col>
             </Row>
             {isEditing ? (

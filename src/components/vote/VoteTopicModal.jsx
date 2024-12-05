@@ -81,7 +81,7 @@ const VoteTopicModal = ({
     >
       <Form form={form} onFinish={onFinish} layout="vertical">
         <Form.Item
-          label="Vote Topic Name"
+          label="Topic Name"
           name="topicName"
           rules={[{ required: true, message: "Please input the topic name!" }]}
         >

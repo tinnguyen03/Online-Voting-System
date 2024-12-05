@@ -1,8 +1,21 @@
 import React, { useState } from "react";
-import { Table, Button, Space, Modal, message, Form, Input } from "antd";
+import {
+  Table,
+  Button,
+  Space,
+  Modal,
+  message,
+  Form,
+  Input,
+  Typography,
+  Row,
+  Col,
+} from "antd";
 import moment from "moment";
 import voteService from "../../services/voteService";
 import optionService from "../../services/optionService";
+
+const { Link } = Typography;
 
 const VoteTopicTable = ({
   voteTopics,
@@ -12,12 +25,25 @@ const VoteTopicTable = ({
 }) => {
   const token = localStorage.getItem("token");
   const [isOptionModalVisible, setIsOptionModalVisible] = useState(false);
+  const [isTopicModalVisible, setIsTopicModalVisible] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState(null);
+  const [options, setOptions] = useState([]);
   const [form] = Form.useForm();
 
   const showOptionModal = (topic) => {
     setSelectedTopic(topic);
     setIsOptionModalVisible(true);
+  };
+
+  const showTopicModal = async (topic) => {
+    try {
+      const response = await optionService.getAllOptions(topic.id, token);
+      setOptions(response);
+      setSelectedTopic(topic);
+      setIsTopicModalVisible(true);
+    } catch (error) {
+      message.error("Failed to fetch options!");
+    }
   };
 
   const handleOptionModalCancel = () => {
@@ -76,12 +102,19 @@ const VoteTopicTable = ({
     setIsVoteModalVisible(true);
   };
 
+  const handleTopicModalCancel = () => {
+    setIsTopicModalVisible(false);
+  };
+
   const columns = [
     {
-      title: "Vote Topic Name",
+      title: "Topic Name",
       dataIndex: "title",
       key: "title",
-      width: "19%",
+      width: "16%",
+      render: (text, record) => (
+        <Link onClick={() => showTopicModal(record)}>{text}</Link>
+      ),
     },
     {
       title: "Status",
@@ -105,17 +138,23 @@ const VoteTopicTable = ({
       key: "actions",
       render: (text, record) => (
         <>
-          <Space size="small">
-            <Button type="dashed" onClick={() => showOptionModal(record)}>
-              Add Options
-            </Button>
-            <Button type="primary" onClick={() => onEdit(record)}>
-              Edit
-            </Button>
-            <Button danger onClick={() => confirmDelete(record.id)}>
-              Delete
-            </Button>
-          </Space>
+          <Row justify="space-between">
+            <Col>
+              <Button type="dashed" onClick={() => showOptionModal(record)}>
+                Add Options
+              </Button>
+            </Col>
+            <Col>
+              <Button type="primary" onClick={() => setEditTopic(record)}>
+                Edit
+              </Button>
+            </Col>
+            <Col>
+              <Button danger onClick={() => confirmDelete(record.id)}>
+                Delete
+              </Button>
+            </Col>
+          </Row>
         </>
       ),
     },
@@ -123,14 +162,7 @@ const VoteTopicTable = ({
 
   return (
     <>
-      <Table
-        columns={columns}
-        dataSource={voteTopics}
-        rowKey="id"
-        expandable={{
-          expandedRowRender: (record) => <p>{record.description}</p>,
-        }}
-      />
+      <Table columns={columns} dataSource={voteTopics} rowKey="id" />
 
       <Modal
         title="Add Option"
@@ -155,6 +187,25 @@ const VoteTopicTable = ({
             </Button>
           </Form.Item>
         </Form>
+      </Modal>
+
+      <Modal
+        title={selectedTopic?.title}
+        open={isTopicModalVisible}
+        onCancel={handleTopicModalCancel}
+        footer={null}
+      >
+        <p>
+          <strong>Description:</strong> {selectedTopic?.description}
+        </p>
+        <p>
+          <strong>Options:</strong>
+        </p>
+        <ul>
+          {options.map((option) => (
+            <li key={option.optionId}>{option.content}</li>
+          ))}
+        </ul>
       </Modal>
     </>
   );
