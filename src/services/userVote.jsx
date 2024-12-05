@@ -17,4 +17,19 @@ const castVote = async (token, voteData) => {
   }
 };
 
-export default { castVote };
+const castVoteRevoke = async (token, voteData) => {
+  try {
+    const response = await axios.post(BASE_URL, voteData, {
+      headers: {
+        Authorization: `Bearer ${token}`, // Attach Bearer token
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error revoke casting vote:", error);
+    throw error; // Propagate the error for handling in the caller
+  }
+};
+
+export default { castVote, castVoteRevoke };

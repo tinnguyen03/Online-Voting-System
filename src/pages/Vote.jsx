@@ -6,14 +6,16 @@ import {
   Modal,
   Radio,
   Form,
-  Input,
   message,
   Layout,
+  Row,
+  Col,
 } from "antd";
 import HeaderComponent from "../components/header/HeaderComponent";
 import FooterComponent from "../components/footer/FooterComponent";
 import { useNavigate } from "react-router-dom";
-import voteService from "../services/voteService"; // Import voteService
+import voteService from "../services/voteService";
+import optionService from "../services/optionService";
 import moment from "moment";
 
 const { Title } = Typography;
@@ -24,6 +26,7 @@ const Vote = () => {
   const [voteTopics, setVoteTopics] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState(null);
+  const [options, setOptions] = useState([]);
   const [form] = Form.useForm();
 
   // Redirect the user if no token is found in localStorage
@@ -57,9 +60,16 @@ const Vote = () => {
     }
   }, [navigate]);
 
-  const showModal = (topic) => {
-    setSelectedTopic(topic);
-    setIsModalVisible(true);
+  const showModal = async (topic) => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await optionService.getAllOptions(topic.id, token);
+      setOptions(response);
+      setSelectedTopic(topic);
+      setIsModalVisible(true);
+    } catch (error) {
+      message.error("Failed to fetch options!");
+    }
   };
 
   const handleOk = () => {
@@ -149,8 +159,15 @@ const Vote = () => {
                 ]}
               >
                 <Radio.Group>
-                  <Radio value={true}>Vote</Radio>
-                  <Radio value={false}>Not Vote</Radio>
+                  <Row gutter={[16, 16]}>
+                    {options.map((option) => (
+                      <Col span={24} key={option.optionId}>
+                        <Radio value={option.optionId}>
+                          {option.content} - {option.votesCount} votes
+                        </Radio>
+                      </Col>
+                    ))}
+                  </Row>
                 </Radio.Group>
               </Form.Item>
             </Form>
