@@ -19,4 +19,48 @@ const getUsers = async (token, page = 0, limit = 10) => {
   }
 };
 
-export default { getUsers };
+const getUsersbyId = async (token, userId) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || "Failed to fetch user!";
+  }
+};
+
+const updateUser = async (token, userId, userData) => {
+  try {
+    const response = await axios.put(`${BASE_URL}/${userId}`, userData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || "Failed to update user!";
+  }
+};
+
+// const banUser = async (token, userId) => {
+//   try {
+//     const response = await axios.put(`${BASE_URL}/${userId}`, {
+//       ban_reason:
+//     }, {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//         "Content-Type": "application/json",
+//       },
+//     });
+//     return response.data;
+//   } catch (error) {
+//     throw error.response?.data?.message || "Failed to ban user!";
+//   }
+// };
+
+export default { getUsers, getUsersbyId, updateUser };

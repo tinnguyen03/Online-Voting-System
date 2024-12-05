@@ -2,6 +2,23 @@ import axios from "axios";
 
 const BASE_URL = "http://localhost:8080/api/vote";
 
+const getVotes = async (token, page = 0, limit = 10) => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}?page=${page}&limit=${limit}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || "Failed to fetch votes!";
+  }
+};
+
 const createVote = async (token, voteData) => {
   try {
     const response = await axios.post(
@@ -26,10 +43,15 @@ const createVote = async (token, voteData) => {
   }
 };
 
-const getVotes = async (token, page = 0, limit = 10) => {
+const updateVote = async (token, voteId, voteData) => {
   try {
-    const response = await axios.get(
-      `${BASE_URL}?page=${page}&limit=${limit}`,
+    const response = await axios.put(
+      `${BASE_URL}/${voteId}`,
+      {
+        title: voteData.title,
+        description: voteData.description,
+        expiresAt: voteData.expiresAt,
+      },
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -39,7 +61,7 @@ const getVotes = async (token, page = 0, limit = 10) => {
     );
     return response.data;
   } catch (error) {
-    throw error.response?.data?.message || "Failed to fetch votes!";
+    throw error.response?.data?.message || "Failed to update vote!";
   }
 };
 
@@ -57,8 +79,4 @@ const deleteVote = async (token, voteId) => {
   }
 };
 
-export default {
-  createVote,
-  getVotes,
-  deleteVote,
-};
+export default { getVotes, createVote, updateVote, deleteVote };
