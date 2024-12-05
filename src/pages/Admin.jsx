@@ -82,27 +82,29 @@ const Admin = () => {
             View Users
           </Button>
 
-          {/* Table of existing vote topics */}
-          <VoteTopicTable
-            voteTopics={voteTopics}
-            setVoteTopics={setVoteTopics}
-            setEditTopic={setEditTopic}
-            setIsVoteModalVisible={setIsVoteModalVisible}
-          />
+          <div style={{ marginTop: "20px" }}>
+            {/* Table of existing vote topics */}
+            <VoteTopicTable
+              voteTopics={voteTopics}
+              setVoteTopics={setVoteTopics}
+              setEditTopic={setEditTopic}
+              setIsVoteModalVisible={setIsVoteModalVisible}
+            />
 
-          {/* Modals */}
-          <VoteTopicModal
-            visible={isVoteModalVisible}
-            setVisible={setIsVoteModalVisible}
-            editTopic={editTopic}
-            setEditTopic={setEditTopic}
-            setVoteTopics={setVoteTopics}
-          />
-          <UserTableModal
-            visible={isUserModalVisible}
-            setVisible={setIsUserModalVisible}
-            users={users}
-          />
+            {/* Modals */}
+            <VoteTopicModal
+              visible={isVoteModalVisible}
+              setVisible={setIsVoteModalVisible}
+              editTopic={editTopic}
+              setEditTopic={setEditTopic}
+              setVoteTopics={setVoteTopics}
+            />
+            <UserTableModal
+              visible={isUserModalVisible}
+              setVisible={setIsUserModalVisible}
+              users={users}
+            />
+          </div>
         </div>
       </Content>
       <FooterComponent />
