@@ -27,11 +27,6 @@ const Admin = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isUserModalVisible, setIsUserModalVisible] = useState(false);
   const [users, setUsers] = useState([]);
-  const [userPagination, setUserPagination] = useState({
-    current: 1,
-    pageSize: 5,
-    total: 0,
-  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,7 +34,7 @@ const Admin = () => {
     const token = localStorage.getItem("token");
     if (!token) {
       message.error("You are not authorized. Please log in.");
-      navigate("/login"); // Redirect to login if no token
+      navigate("/login");
     } else {
       // Call the API to fetch all vote topics when the component loads
       const fetchVoteTopics = async () => {
@@ -51,8 +46,8 @@ const Admin = () => {
             title: vote.title,
             description: vote.description,
             status: vote.status,
-            createdAt: moment(vote.createdAt).format("YYYY-MM-DD HH:mm"), // Format createdAt
-            expiresAt: moment(vote.expiresAt).format("YYYY-MM-DD HH:mm"), // Format expiresAt
+            createdAt: moment(vote.createdAt).format("YYYY-MM-DD"),
+            expiresAt: moment(vote.expiresAt).format("YYYY-MM-DD"),
           }));
           setVoteTopics(voteData); // Set the fetched vote topics to the state
         } catch (error) {
@@ -66,6 +61,8 @@ const Admin = () => {
 
   const onFinish = async (values) => {
     const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user")); // Get user information from localStorage
+    const userId = user.userId; // Extract the userId from the user information
 
     if (editTopic) {
       // Edit existing topic
@@ -73,9 +70,9 @@ const Admin = () => {
         topic.id === editTopic.id
           ? {
               ...topic,
-              name: values.topicName,
+              title: values.topicName,
               description: values.description,
-              deadline: values.deadline.format("YYYY-MM-DD"),
+              expiresAt: values.deadline.format("YYYY-MM-DD"),
             }
           : topic
       );
@@ -89,7 +86,7 @@ const Admin = () => {
           title: values.topicName,
           description: values.description,
           expiresAt: values.deadline.format("YYYY-MM-DD"),
-          createdBy: token, // Use token as createdBy
+          createdBy: userId, // Use userId as createdBy
           options: values.options.map((option) => ({ content: option })), // Map options to the required format
         };
 
@@ -116,35 +113,37 @@ const Admin = () => {
     }
   };
 
+  const confirmDelete = (id) => {
+    Modal.confirm({
+      title: "Are you sure you want to delete this vote topic?",
+      content: "This action cannot be undone.",
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      onOk: () => onDelete(id),
+    });
+  };
+
   const onEdit = (topic) => {
     setEditTopic(topic); // Set the topic to be edited
     form.setFieldsValue({
-      topicName: topic.name,
+      topicName: topic.title,
       description: topic.description,
-      deadline: moment(topic.deadline, "YYYY-MM-DD"),
+      deadline: moment(topic.expiresAt, "YYYY-MM-DD"),
       options: topic.options.map((option) => option.content), // Set options for editing
     });
     setIsModalVisible(true); // Open the modal for editing
   };
 
-  const fetchUsers = async (page = 1, pageSize = 5) => {
+  const fetchUsers = async () => {
     const token = localStorage.getItem("token");
     try {
-      const response = await userService.getUsers(token, page - 1, pageSize);
-      setUsers(response.content); // Set the fetched users to the state
-      setUserPagination({
-        current: page,
-        pageSize,
-        total: response.totalElements,
-      }); // Update pagination state
+      const response = await userService.getUsers(token);
+      setUsers(response.content);
       setIsUserModalVisible(true); // Open the user modal
     } catch (error) {
       message.error("Failed to load users!");
     }
-  };
-
-  const handleUserTableChange = (pagination) => {
-    fetchUsers(pagination.current, pagination.pageSize);
   };
 
   const columns = [
@@ -181,7 +180,7 @@ const Admin = () => {
             <Button type="primary" onClick={() => onEdit(record)}>
               Edit
             </Button>
-            <Button danger onClick={() => onDelete(record.id)}>
+            <Button danger onClick={() => confirmDelete(record.id)}>
               Delete
             </Button>
           </Space>
@@ -221,6 +220,7 @@ const Admin = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     message.success("Logged out successfully!");
     navigate("/login"); // Redirect to login after logout
   };
@@ -260,7 +260,7 @@ const Admin = () => {
           {/* Modal for creating or editing a vote topic */}
           <Modal
             title={editTopic ? "Edit Vote Topic" : "Create Vote Topic"}
-            visible={isModalVisible}
+            open={isModalVisible}
             onCancel={handleCancel}
             footer={null}
           >
@@ -268,10 +268,10 @@ const Admin = () => {
               form={form}
               name="createVoteTopic"
               initialValues={{
-                topicName: editTopic ? editTopic.name : "",
+                topicName: editTopic ? editTopic.title : "",
                 description: editTopic ? editTopic.description : "",
                 deadline: editTopic
-                  ? moment(editTopic.deadline, "YYYY-MM-DD")
+                  ? moment(editTopic.expiresAt, "YYYY-MM-DD")
                   : null,
                 options: editTopic
                   ? editTopic.options.map((option) => option.content)
@@ -351,21 +351,16 @@ const Admin = () => {
           {/* Modal for displaying users */}
           <Modal
             title="Users"
-            visible={isUserModalVisible}
+            open={isUserModalVisible}
             onCancel={handleUserModalCancel}
             footer={null}
+            width={800}
           >
             <Table
               columns={userColumns}
               dataSource={users}
               rowKey="userId"
-              width={900}
-              pagination={{
-                current: userPagination.current,
-                pageSize: userPagination.pageSize,
-                total: userPagination.total,
-                onChange: handleUserTableChange,
-              }}
+              pagination={false} // Remove pagination
             />
           </Modal>
 

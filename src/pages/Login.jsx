@@ -17,8 +17,9 @@ const Login = () => {
       const user = data.userResponseDTO;
       const token = data.tokenDto.accessToken;
 
-      // Store token in localStorage
+      // Store token and user information in localStorage
       localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
 
       // Display success message
       message.success("Login successful! Redirecting...");
