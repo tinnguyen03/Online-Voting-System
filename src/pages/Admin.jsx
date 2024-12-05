@@ -34,7 +34,7 @@ const Admin = () => {
     const token = localStorage.getItem("token");
     if (!token) {
       message.error("You are not authorized. Please log in.");
-      navigate("/login");
+      navigate("/login"); // Redirect to login if no token
     } else {
       // Call the API to fetch all vote topics when the component loads
       const fetchVoteTopics = async () => {
@@ -66,19 +66,24 @@ const Admin = () => {
 
     if (editTopic) {
       // Edit existing topic
-      const updatedTopics = voteTopics.map((topic) =>
-        topic.id === editTopic.id
-          ? {
-              ...topic,
-              title: values.topicName,
-              description: values.description,
-              expiresAt: values.deadline.format("YYYY-MM-DD"),
-            }
-          : topic
-      );
-      setVoteTopics(updatedTopics);
-      setEditTopic(null); // Reset edit mode
-      message.success("Vote topic updated successfully!");
+      try {
+        const updatedTopic = {
+          title: values.topicName,
+          description: values.description,
+          expiresAt: values.deadline.format("YYYY-MM-DD"),
+        };
+
+        // Call updateVote API from voteService
+        await voteService.updateVote(token, editTopic.id, updatedTopic);
+        const updatedTopics = voteTopics.map((topic) =>
+          topic.id === editTopic.id ? { ...topic, ...updatedTopic } : topic
+        );
+        setVoteTopics(updatedTopics);
+        setEditTopic(null); // Reset edit mode
+        message.success("Vote topic updated successfully!");
+      } catch (error) {
+        message.error("Failed to update vote topic!");
+      }
     } else {
       // Create new vote topic
       try {
@@ -95,7 +100,7 @@ const Admin = () => {
         setVoteTopics([...voteTopics, createdVote]); // Add new topic to the table
         message.success("Vote topic created successfully!");
       } catch (error) {
-        message.error(error);
+        message.error("Failed to create vote topic!");
       }
     }
     form.resetFields(); // Reset the form fields
@@ -130,7 +135,6 @@ const Admin = () => {
       topicName: topic.title,
       description: topic.description,
       deadline: moment(topic.expiresAt, "YYYY-MM-DD"),
-      options: topic.options.map((option) => option.content), // Set options for editing
     });
     setIsModalVisible(true); // Open the modal for editing
   };
@@ -273,9 +277,8 @@ const Admin = () => {
                 deadline: editTopic
                   ? moment(editTopic.expiresAt, "YYYY-MM-DD")
                   : null,
-                options: editTopic
-                  ? editTopic.options.map((option) => option.content)
-                  : [],
+                options:
+                  editTopic?.options?.map((option) => option.content) || [],
               }}
               onFinish={onFinish}
               layout="vertical"
@@ -319,26 +322,28 @@ const Admin = () => {
                 />
               </Form.Item>
 
-              <Form.Item
-                label="Options"
-                name="options"
-                rules={[
-                  {
-                    validator: async (_, value) => {
-                      if (!value || value.length === 0) {
-                        throw new Error("Please add at least one option!");
-                      }
+              {!editTopic && (
+                <Form.Item
+                  label="Options"
+                  name="options"
+                  rules={[
+                    {
+                      validator: async (_, value) => {
+                        if (!value || value.length === 0) {
+                          throw new Error("Please add at least one option!");
+                        }
+                      },
                     },
-                  },
-                ]}
-              >
-                <Select
-                  mode="tags"
-                  placeholder="Type an option and press space"
-                  style={{ width: "100%" }}
-                  tokenSeparators={[" "]}
-                />
-              </Form.Item>
+                  ]}
+                >
+                  <Select
+                    mode="tags"
+                    placeholder="Type an option and press space"
+                    style={{ width: "100%" }}
+                    tokenSeparators={[" "]}
+                  />
+                </Form.Item>
+              )}
 
               <Form.Item>
                 <Button type="primary" htmlType="submit" block>
