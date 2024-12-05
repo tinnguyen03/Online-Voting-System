@@ -109,7 +109,7 @@ const VoteTopicModal = ({
               {
                 validator: async (_, value) =>
                   !value || value.length === 0
-                    ? Promise.reject(new Error("Add at least one option!"))
+                    ? Promise.reject(new Error("Add one option!"))
                     : Promise.resolve(),
               },
             ]}
