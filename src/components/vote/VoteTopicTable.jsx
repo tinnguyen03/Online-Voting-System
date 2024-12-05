@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   Table,
   Button,
-  Space,
   Modal,
   message,
   Form,
@@ -10,6 +9,7 @@ import {
   Typography,
   Row,
   Col,
+  Progress,
 } from "antd";
 import moment from "moment";
 import voteService from "../../services/voteService";
@@ -138,14 +138,14 @@ const VoteTopicTable = ({
       key: "actions",
       render: (text, record) => (
         <>
-          <Row justify="space-between">
+          <Row justify="space-evenly">
             <Col>
               <Button type="dashed" onClick={() => showOptionModal(record)}>
                 Add Options
               </Button>
             </Col>
             <Col>
-              <Button type="primary" onClick={() => setEditTopic(record)}>
+              <Button type="primary" onClick={() => onEdit(record)}>
                 Edit
               </Button>
             </Col>
@@ -203,7 +203,16 @@ const VoteTopicTable = ({
         </p>
         <ul>
           {options.map((option) => (
-            <li key={option.optionId}>{option.content}</li>
+            <li key={option.optionId}>
+              {option.content} - {option.votesCount} votes
+              <Progress
+                percent={
+                  (option.votesCount /
+                    options.reduce((acc, opt) => acc + opt.votesCount, 0)) *
+                  100
+                }
+              />
+            </li>
           ))}
         </ul>
       </Modal>
