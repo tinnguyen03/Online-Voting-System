@@ -1,10 +1,10 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:8080/api/vote/vote";
+const BASE_URL = "http://localhost:8080/api/vote";
 
 const castVote = async (token, voteData) => {
   try {
-    const response = await axios.post(BASE_URL, voteData, {
+    const response = await axios.post(`${BASE_URL}/vote`, voteData, {
       headers: {
         Authorization: `Bearer ${token}`, // Attach Bearer token
         "Content-Type": "application/json",
@@ -19,7 +19,7 @@ const castVote = async (token, voteData) => {
 
 const castVoteRevoke = async (token, voteData) => {
   try {
-    const response = await axios.post(BASE_URL, voteData, {
+    const response = await axios.post(`${BASE_URL}/revoke`, voteData, {
       headers: {
         Authorization: `Bearer ${token}`, // Attach Bearer token
         "Content-Type": "application/json",

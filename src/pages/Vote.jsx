@@ -16,9 +16,10 @@ import FooterComponent from "../components/footer/FooterComponent";
 import { useNavigate } from "react-router-dom";
 import voteService from "../services/voteService";
 import optionService from "../services/optionService";
+import userVote from "../services/userVote";
 import moment from "moment";
 
-const { Title } = Typography;
+const { Title, Link } = Typography;
 const { Content } = Layout;
 
 const Vote = () => {
@@ -72,15 +73,30 @@ const Vote = () => {
     }
   };
 
-  const handleOk = () => {
-    form.validateFields().then((values) => {
+  const handleOk = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const user = JSON.parse(localStorage.getItem("user"));
+      const userId = user.userId;
+
+      const values = await form.validateFields();
+      const voteData = {
+        userId: userId,
+        voteId: selectedTopic.id,
+        optionId: values.vote,
+      };
+
+      await userVote.castVote(token, voteData);
+
       const updatedTopics = voteTopics.map((topic) =>
         topic.id === selectedTopic.id ? { ...topic, voted: values.vote } : topic
       );
       setVoteTopics(updatedTopics);
       setIsModalVisible(false);
       message.success("Vote submitted successfully!");
-    });
+    } catch (error) {
+      message.error("Failed to submit vote!");
+    }
   };
 
   const handleCancel = () => {
@@ -93,6 +109,9 @@ const Vote = () => {
       title: "Topic Name",
       dataIndex: "name",
       key: "name",
+      render: (text, record) => (
+        <Link onClick={() => showModal(record)}>{text}</Link>
+      ),
     },
     {
       title: "Vote",

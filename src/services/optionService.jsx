@@ -4,7 +4,7 @@ const BASE_URL = "http://localhost:8080/api/option";
 
 const getAllOptions = async (voteId, token) => {
   try {
-    const response = await axios.get(`${BASE_URL}?voteId=${voteId}`, {
+    const response = await axios.get(`${BASE_URL}/vote/${voteId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: "*/*",

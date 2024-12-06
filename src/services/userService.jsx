@@ -47,20 +47,18 @@ const updateUser = async (token, userId, userData) => {
   }
 };
 
-// const banUser = async (token, userId) => {
-//   try {
-//     const response = await axios.put(`${BASE_URL}/${userId}`, {
-//       ban_reason:
-//     }, {
-//       headers: {
-//         Authorization: `Bearer ${token}`,
-//         "Content-Type": "application/json",
-//       },
-//     });
-//     return response.data;
-//   } catch (error) {
-//     throw error.response?.data?.message || "Failed to ban user!";
-//   }
-// };
+const banUser = async (token, userId, userData) => {
+  try {
+    const response = await axios.put(`${BASE_URL}/${userId}`, userData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || "Failed to ban user!";
+  }
+};
 
-export default { getUsers, getUsersbyId, updateUser };
+export default { getUsers, getUsersbyId, updateUser, banUser };
