@@ -88,7 +88,7 @@ public class UserVoteServiceImpl implements UserVoteService {
     }
 
     @Override
-    public boolean isUserVoted(UUID userId, UUID voteId, UUID optionId) {
-        return userVoteRepository.findByUser_UserIdAndVote_VoteIdAndOption_OptionId(userId, voteId, optionId) != null;
+    public boolean isUserVoted(UUID userId, UUID voteId) {
+        return userVoteRepository.findByUser_UserIdAndVote_VoteId(userId, voteId) != null;
     }
 }

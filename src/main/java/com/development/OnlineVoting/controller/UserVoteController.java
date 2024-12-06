@@ -30,8 +30,8 @@ public class UserVoteController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/isVoted")
-    public ResponseEntity<Boolean> IsUserVoted(@RequestParam UUID userId, @RequestParam UUID voteId, @RequestParam UUID optionId) {
-        return ResponseEntity.ok(userVoteService.isUserVoted(userId, voteId, optionId));
+    @GetMapping("/isVoted/{userId}/{voteId}")
+    public ResponseEntity<Boolean> IsUserVoted(@PathVariable UUID userId, @PathVariable UUID voteId) {
+        return ResponseEntity.ok(userVoteService.isUserVoted(userId, voteId));
     }
 }

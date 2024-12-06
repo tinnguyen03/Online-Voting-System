@@ -10,5 +10,5 @@ public interface UserVoteService {
     UserVoteResponseDTO castVote(UserVoteRequestDTO userVoteRequestDTO);
     void DeleteUserVote(UserVoteRequestDTO userVoteRequestDTO);
 
-    boolean isUserVoted(UUID userId, UUID voteId, UUID optionId);
+    boolean isUserVoted(UUID userId, UUID voteId);
 }
