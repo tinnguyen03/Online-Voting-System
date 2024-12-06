@@ -49,10 +49,13 @@ const updateUser = async (token, userId, userData) => {
 
 const banUser = async (token, userId, bannedReason) => {
   try {
-    const response = await axios.delete(`${BASE_URL}/${userId}`, bannedReason, {
+    const response = await axios.delete(`${BASE_URL}/${userId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
+      },
+      params: {
+        banned_reason: bannedReason.ban_reason,
       },
     });
     return response.data;

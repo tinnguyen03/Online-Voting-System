@@ -103,6 +103,7 @@ const Admin = () => {
               visible={isUserModalVisible}
               setVisible={setIsUserModalVisible}
               users={users}
+              setUsers={setUsers}
             />
           </div>
         </div>

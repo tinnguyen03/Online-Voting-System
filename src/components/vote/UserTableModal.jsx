@@ -5,12 +5,16 @@ import userService from "../../services/userService";
 
 const { Link } = Typography;
 
-const UserTableModal = ({ visible, setVisible, users }) => {
+const UserTableModal = ({ visible, setVisible, users, setUsers }) => {
   const [isBanModalVisible, setIsBanModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [form] = Form.useForm();
 
   const showBanModal = (user) => {
+    if (user.role === "Admin") {
+      message.error("Admins cannot be banned!");
+      return;
+    }
     setSelectedUser(user);
     form.setFieldsValue({ banReason: user.bannedReason || "" });
     setIsBanModalVisible(true);
@@ -22,7 +26,17 @@ const UserTableModal = ({ visible, setVisible, users }) => {
       const values = await form.validateFields();
       const banReason = { ban_reason: values.banReason };
 
+      // Call the API to ban the user
       await userService.banUser(token, selectedUser.userId, banReason);
+
+      // Update the users state
+      const updatedUsers = users.map((user) =>
+        user.userId === selectedUser.userId
+          ? { ...user, bannedReason: values.banReason }
+          : user
+      );
+      setUsers(updatedUsers); // Update the parent state
+
       message.success("User banned successfully!");
       setIsBanModalVisible(false);
     } catch (error) {
