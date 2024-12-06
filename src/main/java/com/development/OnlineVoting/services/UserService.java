@@ -6,7 +6,6 @@ import com.development.OnlineVoting.dtos.User.UserRequestDTO;
 import com.development.OnlineVoting.dtos.User.UserResponseDTO;
 import org.springframework.data.domain.Page;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface UserService {

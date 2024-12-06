@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface OptionRepository extends JpaRepository<Option, UUID> {
-
     List<Option> findAllByVote(Vote vote);
 
 }

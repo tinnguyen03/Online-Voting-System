@@ -18,7 +18,7 @@ public class Option {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "option_id", nullable = false, updatable = false, length = 36)
+    @Column(name = "option_id", nullable = false, updatable = false)
     private UUID optionId;
 
     @ManyToOne

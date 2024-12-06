@@ -19,7 +19,7 @@ public class UserVoteController {
 
     @PostMapping("/vote")
     public ResponseEntity<UserVoteResponseDTO> UserVote(@RequestBody UserVoteRequestDTO userVoteRequestDTO) {
-        return ResponseEntity.ok(userVoteService.UserVote(userVoteRequestDTO));
+        return ResponseEntity.ok(userVoteService.castVote(userVoteRequestDTO));
     }
 
     @PostMapping("/revoke")

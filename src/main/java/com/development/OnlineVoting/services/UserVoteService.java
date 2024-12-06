@@ -7,6 +7,6 @@ import java.util.UUID;
 
 public interface UserVoteService {
 
-    UserVoteResponseDTO UserVote(UserVoteRequestDTO userVoteRequestDTO);
+    UserVoteResponseDTO castVote(UserVoteRequestDTO userVoteRequestDTO);
     void DeleteUserVote(UserVoteRequestDTO userVoteRequestDTO);
 }

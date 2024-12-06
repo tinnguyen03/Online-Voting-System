@@ -34,27 +34,41 @@ public class UserVoteServiceImpl implements UserVoteService {
     private OptionRepository optionRepository;
 
     @Override
-    public UserVoteResponseDTO UserVote(UserVoteRequestDTO userVoteRequestDTO) {
-        UserVote userVote = new UserVote();
+    public UserVoteResponseDTO castVote(UserVoteRequestDTO userVoteRequestDTO) {
         Vote vote = voteRepository.findById(userVoteRequestDTO.getVoteId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vote not found with id: " + userVoteRequestDTO.getVoteId()));
-        if(vote.getExpiresAt().toInstant().isBefore(new Date().toInstant())) {
-            vote.setStatus("expired");
-            voteRepository.save(vote);
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vote not found"));
+        if (vote.getExpiresAt().before(new Date())) {
+            if (!"expired".equals(vote.getStatus())) {
+                vote.setStatus("expired");
+                voteRepository.save(vote);
+            }
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vote has expired");
         }
-        userVote.setVote(vote);
-        userVote.setUser(userRepository.findById(userVoteRequestDTO.getUserId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with id: " + userVoteRequestDTO.getUserId())));
-        Option option = optionRepository.findById(userVoteRequestDTO.getOptionId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Option not found with id: " + userVoteRequestDTO.getOptionId()));
-        option.setVotesCount(option.getVotesCount() + 1);
-        Option savedOption = optionRepository.save(option);
 
-        userVote.setOption(savedOption);
+        var user = userRepository.findById(userVoteRequestDTO.getUserId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        Option option = optionRepository.findById(userVoteRequestDTO.getOptionId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Option not found"));
+
+        synchronized (this) {
+            option.setVotesCount(option.getVotesCount() + 1);
+            optionRepository.save(option);
+        }
+
+        UserVote userVote = UserVote.builder()
+                .vote(vote)
+                .user(user)
+                .option(option)
+                .votedAt(new Date())
+                .build();
         UserVote savedUserVote = userVoteRepository.save(userVote);
 
-        return new UserVoteResponseDTO(savedUserVote.getUserVoteId(), savedUserVote.getVote().getVoteId(), savedUserVote.getUser().getUserId(), savedUserVote.getOption().getOptionId(), savedUserVote.getVotedAt());
+        return new UserVoteResponseDTO(savedUserVote.getUserVoteId(),
+                savedUserVote.getVote().getVoteId(),
+                savedUserVote.getUser().getUserId(),
+                savedUserVote.getOption().getOptionId(),
+                savedUserVote.getVotedAt());
     }
 
     @Override

@@ -24,13 +24,13 @@ public class OptionController {
         return ResponseEntity.ok(optionService.CreateOption(optionRequestDTO));
     }
 
-    @GetMapping("/{optionId}")
+    @GetMapping("option/{optionId}")
     public ResponseEntity<OptionResponseDTO> GetOptionById(@PathVariable UUID optionId) {
         return ResponseEntity.ok(optionService.GetOptionById(optionId));
     }
 
-    @GetMapping("{voteId}")
-    public ResponseEntity<List<OptionResponseDTO>> GetAllOptions(@PathVariable UUID voteId) {
+    @GetMapping("vote/{voteId}")
+    public ResponseEntity<List<OptionResponseDTO>> GetAllOptionsByVoteId(@PathVariable UUID voteId) {
         return ResponseEntity.ok(optionService.GetAllOptions(voteId));
     }
 

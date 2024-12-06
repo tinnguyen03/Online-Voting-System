@@ -40,7 +40,7 @@ public class VoteServiceImpl implements VoteService {
         vote.setTitle(voteRequestDTO.getTitle());
         vote.setDescription(voteRequestDTO.getDescription());
         vote.setExpiresAt(voteRequestDTO.getExpiresAt());
-        vote.setStatus("Available");
+        vote.setStatus("Active");
 
         vote.setCreatedBy(userRepository.findById(voteRequestDTO.getCreatedBy())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with id: " + voteRequestDTO.getCreatedBy())));
