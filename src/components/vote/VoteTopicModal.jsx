@@ -9,6 +9,7 @@ const VoteTopicModal = ({
   editTopic,
   setEditTopic,
   setVoteTopics,
+  onNewTopicCreated,
 }) => {
   const [form] = Form.useForm();
   const token = localStorage.getItem("token");
@@ -19,7 +20,7 @@ const VoteTopicModal = ({
       form.setFieldsValue({
         topicName: editTopic.title,
         description: editTopic.description,
-        deadline: moment(editTopic.expiresAt, "YYYY-MM-DD"), // Set deadline using formatted value
+        deadline: moment(editTopic.expiresAt, "YYYY-MM-DD"),
         options: editTopic.options?.map((option) => option.content) || [],
       });
     } else {
@@ -58,6 +59,7 @@ const VoteTopicModal = ({
         const createdVote = await voteService.createVote(token, newTopic);
         setVoteTopics((prevTopics) => [...prevTopics, createdVote]);
         message.success("Vote topic created successfully!");
+        onNewTopicCreated(createdVote); // Pass the newly created topic to the parent component
       } catch {
         message.error("Failed to create vote topic!");
       }
@@ -121,7 +123,7 @@ const VoteTopicModal = ({
               {
                 validator: async (_, value) =>
                   !value || value.length === 0
-                    ? Promise.reject(new Error("Add one option!"))
+                    ? Promise.reject(new Error("Add at least one option!"))
                     : Promise.resolve(),
               },
             ]}

@@ -186,7 +186,7 @@ const Vote = () => {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status) => (status === "active" ? "Active" : "Inactive"),
+      render: (status) => (status === "active" ? "Inactive" : "Active"),
     },
     {
       title: "Actions",

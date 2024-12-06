@@ -64,7 +64,7 @@ const findCastVote = async (token, userId, voteId) => {
     return response.data;
   } catch (error) {
     console.error("Error finding vote:", error);
-    throw error; // Propagate the error for handling in the caller
+    throw error.response?.data?.message || "Failed to find vote!";
   }
 };
 
