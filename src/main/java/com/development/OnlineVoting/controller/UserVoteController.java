@@ -24,14 +24,19 @@ public class UserVoteController {
         return ResponseEntity.ok(userVoteService.castVote(userVoteRequestDTO));
     }
 
-    @PostMapping("/revoke")
-    public ResponseEntity<Void> DeleteUserVote(@RequestBody UserVoteRequestDTO userVoteRequestDTO) {
-        userVoteService.DeleteUserVote(userVoteRequestDTO);
+    @DeleteMapping("/revoke/{userId}/{voteId}")
+    public ResponseEntity<Void> DeleteUserVote(@PathVariable UUID userId, @PathVariable UUID voteId) {
+        userVoteService.DeleteUserVote(userId, voteId);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/isVoted/{userId}/{voteId}")
     public ResponseEntity<Boolean> IsUserVoted(@PathVariable UUID userId, @PathVariable UUID voteId) {
         return ResponseEntity.ok(userVoteService.isUserVoted(userId, voteId));
+    }
+
+    @GetMapping("/find/{userId}/{voteId}")
+    public ResponseEntity<UserVoteResponseDTO> FindUserVote(@PathVariable UUID userId, @PathVariable UUID voteId){
+        return ResponseEntity.ok(userVoteService.FindVoteOption(userId, voteId));
     }
 }

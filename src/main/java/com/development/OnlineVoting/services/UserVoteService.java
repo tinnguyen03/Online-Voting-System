@@ -8,7 +8,7 @@ import java.util.UUID;
 public interface UserVoteService {
 
     UserVoteResponseDTO castVote(UserVoteRequestDTO userVoteRequestDTO);
-    void DeleteUserVote(UserVoteRequestDTO userVoteRequestDTO);
-
+    void DeleteUserVote(UUID userId, UUID voteId);
+    UserVoteResponseDTO  FindVoteOption(UUID userId, UUID voteId);
     boolean isUserVoted(UUID userId, UUID voteId);
 }

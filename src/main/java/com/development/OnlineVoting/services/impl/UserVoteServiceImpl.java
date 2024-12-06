@@ -1,7 +1,5 @@
 package com.development.OnlineVoting.services.impl;
 
-import com.development.OnlineVoting.dtos.User.UserRequestDTO;
-import com.development.OnlineVoting.dtos.User.UserResponseDTO;
 import com.development.OnlineVoting.dtos.UserVote.UserVoteRequestDTO;
 import com.development.OnlineVoting.dtos.UserVote.UserVoteResponseDTO;
 import com.development.OnlineVoting.entities.Option;
@@ -11,7 +9,6 @@ import com.development.OnlineVoting.repositories.OptionRepository;
 import com.development.OnlineVoting.repositories.UserRepository;
 import com.development.OnlineVoting.repositories.UserVoteRepository;
 import com.development.OnlineVoting.repositories.VoteRepository;
-import com.development.OnlineVoting.services.UserService;
 import com.development.OnlineVoting.services.UserVoteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -78,13 +74,31 @@ public class UserVoteServiceImpl implements UserVoteService {
     }
 
     @Override
-    public void DeleteUserVote(UserVoteRequestDTO userVoteRequestDTO) {
-        UserVote userVote = userVoteRepository.findByUser_UserIdAndVote_VoteIdAndOption_OptionId(userVoteRequestDTO.getUserId(), userVoteRequestDTO.getVoteId(), userVoteRequestDTO.getOptionId());
+    public void DeleteUserVote(UUID userId, UUID voteId) {
+        UserVote userVote = userVoteRepository.findByUser_UserIdAndVote_VoteId(userId, voteId);
+        if(userVote == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vote not found");
+        }
         userVoteRepository.deleteById(userVote.getUserVoteId());
-        Option option = optionRepository.findById(userVoteRequestDTO.getOptionId())
-                .orElseThrow(() -> new RuntimeException("Option not found with id: " + userVoteRequestDTO.getOptionId()));
+        Option option = optionRepository.findById(userVote.getOption().getOptionId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Option not found"));
         option.setVotesCount(option.getVotesCount() - 1);
         optionRepository.save(option);
+    }
+
+    @Override
+    public UserVoteResponseDTO FindVoteOption(UUID userId, UUID voteId) {
+        UserVote userVote = userVoteRepository.findByUser_UserIdAndVote_VoteId(userId, voteId);
+        if (userVote == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User vote not found");
+        }
+        return new UserVoteResponseDTO(
+                userVote.getUserVoteId(),
+                userVote.getUser().getUserId(),
+                userVote.getVote().getVoteId(),
+                userVote.getOption().getOptionId(),
+                userVote.getVotedAt()
+        );
     }
 
     @Override
