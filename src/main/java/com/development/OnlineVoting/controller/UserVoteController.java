@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/vote")
@@ -26,5 +28,10 @@ public class UserVoteController {
     public ResponseEntity<Void> DeleteUserVote(@RequestBody UserVoteRequestDTO userVoteRequestDTO) {
         userVoteService.DeleteUserVote(userVoteRequestDTO);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/isVoted")
+    public ResponseEntity<Boolean> IsUserVoted(@RequestParam UUID userId, @RequestParam UUID voteId, @RequestParam UUID optionId) {
+        return ResponseEntity.ok(userVoteService.isUserVoted(userId, voteId, optionId));
     }
 }

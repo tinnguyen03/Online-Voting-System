@@ -33,6 +33,8 @@ public class UserVoteServiceImpl implements UserVoteService {
     @Autowired
     private OptionRepository optionRepository;
 
+
+
     @Override
     public UserVoteResponseDTO castVote(UserVoteRequestDTO userVoteRequestDTO) {
         UserVote userVoted = userVoteRepository.findByUser_UserIdAndVote_VoteIdAndOption_OptionId(userVoteRequestDTO.getUserId(), userVoteRequestDTO.getVoteId(), userVoteRequestDTO.getOptionId());
@@ -83,5 +85,10 @@ public class UserVoteServiceImpl implements UserVoteService {
                 .orElseThrow(() -> new RuntimeException("Option not found with id: " + userVoteRequestDTO.getOptionId()));
         option.setVotesCount(option.getVotesCount() - 1);
         optionRepository.save(option);
+    }
+
+    @Override
+    public boolean isUserVoted(UUID userId, UUID voteId, UUID optionId) {
+        return userVoteRepository.findByUser_UserIdAndVote_VoteIdAndOption_OptionId(userId, voteId, optionId) != null;
     }
 }
