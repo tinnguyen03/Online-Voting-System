@@ -175,27 +175,21 @@ const HeaderComponent = ({ userType }) => {
                 <Form.Item
                   label="Name"
                   name="name"
-                  rules={[
-                    { required: true, message: "Please input your name!" },
-                  ]}
+                  rules={[{ message: "Please input your name!" }]}
                 >
                   <Input />
                 </Form.Item>
                 <Form.Item
                   label="Email"
                   name="email"
-                  rules={[
-                    { required: true, message: "Please input your email!" },
-                  ]}
+                  rules={[{ message: "Please input your email!" }]}
                 >
                   <Input />
                 </Form.Item>
                 <Form.Item
                   label="Password"
                   name="password"
-                  rules={[
-                    { required: true, message: "Please input your password!" },
-                  ]}
+                  rules={[{ message: "Please input your password!" }]}
                 >
                   <Input.Password />
                 </Form.Item>
