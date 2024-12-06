@@ -43,6 +43,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public AuthResponseDto login(AuthRequestDto authRequestDto) {
         User user = userRepository.findByEmail(authRequestDto.getEmail());
+        if (user.getStatus() == "banned") {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,("User is banned, reason is: " + user.getBannedReason()));
+        }
         if (user == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,("User not found"));
         }
