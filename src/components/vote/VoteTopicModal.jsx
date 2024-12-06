@@ -61,7 +61,7 @@ const VoteTopicModal = ({
         message.success("Vote topic created successfully!");
         onNewTopicCreated(createdVote); // Pass the newly created topic to the parent component
       } catch {
-        message.error("Failed to create vote topic!");
+        //message.error("Failed to create vote topic!");
       }
     }
     form.resetFields();

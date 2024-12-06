@@ -76,6 +76,27 @@ const VoteTopicTable = ({
     }
   };
 
+  const deleteOption = async (optionId) => {
+    try {
+      await optionService.deleteOption(token, optionId);
+      setOptions(options.filter((option) => option.optionId !== optionId));
+      message.success("Option deleted successfully!");
+    } catch (error) {
+      message.error("Failed to delete option!");
+    }
+  };
+
+  const confirmDeleteOption = (optionId) => {
+    Modal.confirm({
+      title: "Are you sure you want to delete this option?",
+      content: "This action cannot be undone.",
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      onOk: () => deleteOption(optionId),
+    });
+  };
+
   const onDelete = async (id) => {
     try {
       await voteService.deleteVote(token, id);
@@ -204,21 +225,36 @@ const VoteTopicTable = ({
         <ul>
           {options.map((option) => (
             <li key={option.optionId}>
-              {option.content} - {option.votesCount} votes
-              <Progress
-                percent={
-                  options.reduce((acc, opt) => acc + opt.votesCount, 0) === 0
-                    ? 0
-                    : (
-                        (option.votesCount /
-                          options.reduce(
-                            (acc, opt) => acc + opt.votesCount,
-                            0
-                          )) *
-                        100
-                      ).toFixed(2)
-                }
-              />
+              <Row align="middle" gutter={[16, 16]} style={{ marginBottom: 8 }}>
+                <Col span={8}>
+                  {option.content} - {option.votesCount} votes
+                </Col>
+                <Col span={12}>
+                  <Progress
+                    percent={
+                      options.reduce((acc, opt) => acc + opt.votesCount, 0) ===
+                      0
+                        ? 0
+                        : (
+                            (option.votesCount /
+                              options.reduce(
+                                (acc, opt) => acc + opt.votesCount,
+                                0
+                              )) *
+                            100
+                          ).toFixed(2)
+                    }
+                  />
+                </Col>
+                <Col span={4}>
+                  <Button
+                    danger
+                    onClick={() => confirmDeleteOption(option.optionId)}
+                  >
+                    Delete
+                  </Button>
+                </Col>
+              </Row>
             </li>
           ))}
         </ul>
