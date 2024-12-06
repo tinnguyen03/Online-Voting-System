@@ -14,6 +14,7 @@ import java.util.UUID;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/option")
+@CrossOrigin("*")
 public class OptionController {
     @Autowired
     private OptionService optionService;

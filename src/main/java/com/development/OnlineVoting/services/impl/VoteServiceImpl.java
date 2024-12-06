@@ -83,7 +83,7 @@ public class VoteServiceImpl implements VoteService {
     @Override
     public Page<VoteOnlyResponseDTO> GetAllVotes(int page, int limit) {
         Pageable pageable = PageRequest.of(page, limit);
-        Page<Vote> votePage = voteRepository.findAll(pageable);
+        Page<Vote> votePage = voteRepository.findAllByStatus("Active", pageable);
         return votePage.map(vote -> {
             VoteOnlyResponseDTO voteOnlyResponseDTO = new VoteOnlyResponseDTO();
             voteOnlyResponseDTO.setVoteId(vote.getVoteId());

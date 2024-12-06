@@ -16,6 +16,7 @@ import java.util.UUID;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/vote")
+@CrossOrigin("*")
 public class VoteController {
     @Autowired
     private VoteService voteService;
