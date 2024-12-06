@@ -33,6 +33,9 @@ const Vote = () => {
   // Redirect the user if no token is found in localStorage
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user"));
+    const userId = user.userId;
+
     if (!token) {
       message.error("You must be logged in to access this page.");
       navigate("/login"); // Redirect to login page if no token
@@ -41,17 +44,25 @@ const Vote = () => {
       const fetchVoteTopics = async () => {
         try {
           const response = await voteService.getVotes(token, 0, 10);
-          // Map the response to a more accessible structure
-          const voteData = response.content.map((vote) => ({
-            id: vote.voteId, // Make 'id' field to match table data
-            name: vote.title,
-            description: vote.description,
-            status: vote.status,
-            createdAt: moment(vote.createdAt).format("YYYY-MM-DD"),
-            expiresAt: moment(vote.expiresAt).format("YYYY-MM-DD"),
-            voted: null,
-          }));
-          setVoteTopics(voteData); // Set the fetched vote topics to the state
+          const voteData = await Promise.all(
+            response.content.map(async (vote) => {
+              const isVoted = await userVote.checkCastVote(
+                token,
+                userId,
+                vote.voteId
+              );
+              return {
+                id: vote.voteId,
+                name: vote.title,
+                description: vote.description,
+                status: vote.status,
+                createdAt: moment(vote.createdAt).format("YYYY-MM-DD"),
+                expiresAt: moment(vote.expiresAt).format("YYYY-MM-DD"),
+                voted: isVoted,
+              };
+            })
+          );
+          setVoteTopics(voteData);
         } catch (error) {
           message.error("Failed to load vote topics!");
         }
@@ -89,13 +100,31 @@ const Vote = () => {
       await userVote.castVote(token, voteData);
 
       const updatedTopics = voteTopics.map((topic) =>
-        topic.id === selectedTopic.id ? { ...topic, voted: values.vote } : topic
+        topic.id === selectedTopic.id ? { ...topic, voted: true } : topic
       );
       setVoteTopics(updatedTopics);
       setIsModalVisible(false);
       message.success("Vote submitted successfully!");
     } catch (error) {
       message.error("Failed to submit vote!");
+    }
+  };
+
+  const handleCancelVote = async (topic) => {
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user"));
+    const userId = user.userId;
+
+    try {
+      await userVote.castVoteRevoke(token, userId, topic.id);
+
+      const updatedTopics = voteTopics.map((t) =>
+        t.id === topic.id ? { ...t, voted: false } : t
+      );
+      setVoteTopics(updatedTopics);
+      message.success("Vote cancelled successfully!");
+    } catch (error) {
+      message.error("Failed to cancel vote!");
     }
   };
 
@@ -117,8 +146,7 @@ const Vote = () => {
       title: "Vote",
       dataIndex: "voted",
       key: "voted",
-      render: (voted) =>
-        voted === null ? "N/A" : voted ? "Voted" : "Not Voted",
+      render: (voted) => (voted ? "Voted" : "Not Voted"),
     },
     {
       title: "Status",
@@ -129,11 +157,20 @@ const Vote = () => {
     {
       title: "Actions",
       key: "actions",
-      render: (text, record) => (
-        <Button type="primary" onClick={() => showModal(record)}>
-          Vote
-        </Button>
-      ),
+      render: (text, record) =>
+        record.voted ? (
+          <Button danger onClick={() => handleCancelVote(record)}>
+            Cancel Vote
+          </Button>
+        ) : (
+          <Button
+            type="primary"
+            onClick={() => showModal(record)}
+            disabled={record.voted}
+          >
+            Vote
+          </Button>
+        ),
     },
   ];
 
@@ -149,26 +186,14 @@ const Vote = () => {
       <Content>
         <div style={{ maxWidth: "800px", margin: "50px auto" }}>
           <Title level={2}>Vote</Title>
-          <Table
-            columns={columns}
-            dataSource={voteTopics}
-            rowKey="id"
-            expandable={{
-              expandedRowRender: (record) => (
-                <div>
-                  <p>
-                    <strong>Description:</strong> {record.description}
-                  </p>
-                </div>
-              ),
-            }}
-          />
+          <Table columns={columns} dataSource={voteTopics} rowKey="id" />
 
           <Modal
             title="Vote"
             open={isModalVisible}
             onOk={handleOk}
             onCancel={handleCancel}
+            okButtonProps={{ disabled: selectedTopic?.voted }}
           >
             <Form form={form} layout="vertical">
               <Form.Item

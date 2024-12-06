@@ -17,14 +17,17 @@ const castVote = async (token, voteData) => {
   }
 };
 
-const castVoteRevoke = async (token, voteData) => {
+const castVoteRevoke = async (token, userId, voteId) => {
   try {
-    const response = await axios.post(`${BASE_URL}/revoke`, voteData, {
-      headers: {
-        Authorization: `Bearer ${token}`, // Attach Bearer token
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await axios.delete(
+      `${BASE_URL}/revoke/${userId}/${voteId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Attach Bearer token
+          "Content-Type": "application/json",
+        },
+      }
+    );
     return response.data;
   } catch (error) {
     console.error("Error revoke casting vote:", error);
@@ -32,4 +35,22 @@ const castVoteRevoke = async (token, voteData) => {
   }
 };
 
-export default { castVote, castVoteRevoke };
+const checkCastVote = async (token, userId, voteId) => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/isVoted/${userId}/${voteId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Attach Bearer token
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error checking vote:", error);
+    throw error; // Propagate the error for handling in the caller
+  }
+};
+
+export default { castVote, castVoteRevoke, checkCastVote };
