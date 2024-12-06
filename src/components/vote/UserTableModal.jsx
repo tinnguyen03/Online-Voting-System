@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Modal, Table, Typography, Form, Input, Button, message } from "antd";
+import { Modal, Table, Typography, Form, Input, message } from "antd";
 import moment from "moment";
 import userService from "../../services/userService";
 
@@ -12,7 +12,7 @@ const UserTableModal = ({ visible, setVisible, users }) => {
 
   const showBanModal = (user) => {
     setSelectedUser(user);
-    form.setFieldsValue({ banReason: "" });
+    form.setFieldsValue({ banReason: user.bannedReason || "" });
     setIsBanModalVisible(true);
   };
 
@@ -36,7 +36,12 @@ const UserTableModal = ({ visible, setVisible, users }) => {
       dataIndex: "name",
       key: "name",
       render: (text, record) => (
-        <Link onClick={() => showBanModal(record)}>{text}</Link>
+        <Link
+          onClick={() => showBanModal(record)}
+          style={{ color: record.bannedReason !== "None" ? "red" : "inherit" }}
+        >
+          {text}
+        </Link>
       ),
     },
     { title: "Email", dataIndex: "email", key: "email" },
