@@ -129,9 +129,12 @@ public class UserServiceImpl implements UserService {
     public UserResponseDTO updateUser(UUID userId, UserRequestDTO userRequestDTO) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException( HttpStatus.NOT_FOUND,"User not found with id: " + userId));
-        user.setName(userRequestDTO.getName());
-        user.setEmail(userRequestDTO.getEmail());
-        user.setPasswordHash(BCrypt.withDefaults().hashToString(12, userRequestDTO.getPassword().toCharArray()));
+        if(userRequestDTO.getName() != null && !userRequestDTO.getName().isEmpty()) {
+            user.setName(userRequestDTO.getName());
+        }
+        if(userRequestDTO.getPassword() != null && !userRequestDTO.getPassword().isEmpty()) {
+            user.setPasswordHash(BCrypt.withDefaults().hashToString(12, userRequestDTO.getPassword().toCharArray()));
+        }
         userRepository.save(user);
         return new UserResponseDTO(user.getUserId(), user.getName(), user.getEmail(), user.getRole(), user.getStatus(), user.getBannedReason(), user.getCreatedAt());
     }
