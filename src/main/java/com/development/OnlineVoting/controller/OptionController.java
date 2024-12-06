@@ -28,8 +28,8 @@ public class OptionController {
         return ResponseEntity.ok(optionService.GetOptionById(optionId));
     }
 
-    @GetMapping
-    public ResponseEntity<List<OptionResponseDTO>> GetAllOptions(@RequestParam UUID voteId) {
+    @GetMapping("{voteId}")
+    public ResponseEntity<List<OptionResponseDTO>> GetAllOptions(@PathVariable UUID voteId) {
         return ResponseEntity.ok(optionService.GetAllOptions(voteId));
     }
 
