@@ -16,6 +16,7 @@ import FooterComponent from "../components/footer/FooterComponent";
 import { useNavigate } from "react-router-dom";
 import voteService from "../services/voteService";
 import optionService from "../services/optionService";
+import userService from "../services/userService";
 import userVote from "../services/userVote";
 import moment from "moment";
 
@@ -28,6 +29,7 @@ const Vote = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [options, setOptions] = useState([]);
+  const [isBanned, setIsBanned] = useState(false);
   const [form] = Form.useForm();
 
   // Redirect the user if no token is found in localStorage
@@ -40,6 +42,26 @@ const Vote = () => {
       message.error("You must be logged in to access this page.");
       navigate("/login"); // Redirect to login page if no token
     } else {
+      // Check if the user is banned
+      const checkUserStatus = async () => {
+        try {
+          const userData = await userService.getUsersbyId(token, userId);
+          if (userData.bannedReason !== "None") {
+            setIsBanned(true);
+            message.error("You have been banned!", 5);
+            setTimeout(() => {
+              localStorage.removeItem("token");
+              localStorage.removeItem("user");
+              navigate("/login");
+            }, 5000);
+          }
+        } catch (error) {
+          message.error("Failed to check user status!");
+        }
+      };
+
+      checkUserStatus();
+
       // Call the API to fetch all vote topics when the component loads
       const fetchVoteTopics = async () => {
         try {
@@ -149,7 +171,9 @@ const Vote = () => {
       dataIndex: "name",
       key: "name",
       render: (text, record) => (
-        <Link onClick={() => showModal(record)}>{text}</Link>
+        <Link onClick={() => showModal(record)} disabled={isBanned}>
+          {text}
+        </Link>
       ),
     },
     {
@@ -169,14 +193,18 @@ const Vote = () => {
       key: "actions",
       render: (text, record) =>
         record.voted ? (
-          <Button danger onClick={() => handleCancelVote(record)}>
+          <Button
+            danger
+            onClick={() => handleCancelVote(record)}
+            disabled={isBanned}
+          >
             Cancel Vote
           </Button>
         ) : (
           <Button
             type="primary"
             onClick={() => showModal(record)}
-            disabled={record.voted}
+            disabled={record.voted || isBanned}
           >
             Vote
           </Button>
@@ -203,7 +231,7 @@ const Vote = () => {
             open={isModalVisible}
             onOk={handleOk}
             onCancel={handleCancel}
-            okButtonProps={{ disabled: selectedTopic?.voted }}
+            okButtonProps={{ disabled: selectedTopic?.voted || isBanned }}
           >
             <Form form={form} layout="vertical">
               <Form.Item
@@ -216,7 +244,7 @@ const Vote = () => {
                   <Row gutter={[16, 16]}>
                     {options.map((option) => (
                       <Col span={24} key={option.optionId}>
-                        <Radio value={option.optionId}>
+                        <Radio value={option.optionId} disabled={isBanned}>
                           {option.content} - {option.votesCount} votes
                         </Radio>
                       </Col>

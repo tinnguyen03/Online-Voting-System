@@ -47,9 +47,9 @@ const updateUser = async (token, userId, userData) => {
   }
 };
 
-const banUser = async (token, userId, userData) => {
+const banUser = async (token, userId, bannedReason) => {
   try {
-    const response = await axios.put(`${BASE_URL}/${userId}`, userData, {
+    const response = await axios.delete(`${BASE_URL}/${userId}`, bannedReason, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
