@@ -53,4 +53,19 @@ const checkCastVote = async (token, userId, voteId) => {
   }
 };
 
-export default { castVote, castVoteRevoke, checkCastVote };
+const findCastVote = async (token, userId, voteId) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/find/${userId}/${voteId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`, // Attach Bearer token
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error finding vote:", error);
+    throw error; // Propagate the error for handling in the caller
+  }
+};
+
+export default { castVote, castVoteRevoke, checkCastVote, findCastVote };

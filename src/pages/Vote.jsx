@@ -74,10 +74,20 @@ const Vote = () => {
 
   const showModal = async (topic) => {
     const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user"));
+    const userId = user.userId;
+
     try {
       const response = await optionService.getAllOptions(topic.id, token);
       setOptions(response);
       setSelectedTopic(topic);
+
+      // Check if the user has already voted and get the optionId
+      const userVoteData = await userVote.findCastVote(token, userId, topic.id);
+      if (userVoteData) {
+        form.setFieldsValue({ vote: userVoteData.optionId });
+      }
+
       setIsModalVisible(true);
     } catch (error) {
       message.error("Failed to fetch options!");

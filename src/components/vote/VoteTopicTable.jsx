@@ -206,11 +206,11 @@ const VoteTopicTable = ({
             <li key={option.optionId}>
               {option.content} - {option.votesCount} votes
               <Progress
-                percent={
+                percent={(
                   (option.votesCount /
                     options.reduce((acc, opt) => acc + opt.votesCount, 0)) *
                   100
-                }
+                ).toFixed(2)}
               />
             </li>
           ))}
