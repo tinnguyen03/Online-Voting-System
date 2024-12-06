@@ -21,10 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class VoteServiceImpl implements VoteService {
@@ -71,6 +68,12 @@ public class VoteServiceImpl implements VoteService {
     public VoteResponseDTO GetVoteById(UUID voteId) {
         Vote savedVote = voteRepository.findById(voteId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vote not found with id: " + voteId));
+        if (savedVote.getExpiresAt().before(new Date())) {
+            if (!"expired".equals(savedVote.getStatus())) {
+                savedVote.setStatus("expired");
+                voteRepository.save(savedVote);
+            }
+        }
         VoteResponseDTO voteResponseDTO = new VoteResponseDTO();
         voteResponseDTO.setVoteId(savedVote.getVoteId());
         voteResponseDTO.setTitle(savedVote.getTitle());
@@ -102,6 +105,13 @@ public class VoteServiceImpl implements VoteService {
     public VoteOnlyResponseDTO UpdateVote(UUID voteId, VoteDetailRequestDTO voteDetailRequestDto) {
         Vote vote = voteRepository.findById(voteId)
                 .orElseThrow(() -> new ResponseStatusException( HttpStatus.NOT_FOUND,"Vote not found with id: " + voteId));
+        if (vote.getExpiresAt().before(new Date())) {
+            if (!"expired".equals(vote.getStatus())) {
+                vote.setStatus("expired");
+                voteRepository.save(vote);
+            }
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vote has expired");
+        }
         vote.setTitle(voteDetailRequestDto.getTitle());
         vote.setDescription(voteDetailRequestDto.getDescription());
         vote.setExpiresAt(voteDetailRequestDto.getExpiresAt());
@@ -113,6 +123,14 @@ public class VoteServiceImpl implements VoteService {
     public void DeleteVote(UUID voteId) {
         Vote vote = voteRepository.findById(voteId)
                 .orElseThrow(() -> new ResponseStatusException( HttpStatus.NOT_FOUND,"Vote not found with id: " + voteId));
+
+        if (vote.getExpiresAt().before(new Date())) {
+            if (!"expired".equals(vote.getStatus())) {
+                vote.setStatus("expired");
+                voteRepository.save(vote);
+            }
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vote has expired");
+        }
         vote.setStatus("deleted");
         voteRepository.save(vote);
     }

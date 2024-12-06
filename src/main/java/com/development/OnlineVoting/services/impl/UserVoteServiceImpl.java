@@ -75,10 +75,25 @@ public class UserVoteServiceImpl implements UserVoteService {
 
     @Override
     public void DeleteUserVote(UUID userId, UUID voteId) {
+        Vote vote = voteRepository.findById(voteId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vote not found"));
+        if (vote.getExpiresAt().before(new Date())) {
+            if (!"expired".equals(vote.getStatus())) {
+                vote.setStatus("expired");
+                voteRepository.save(vote);
+            }
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vote has expired");
+        }
+
+        if (!vote.getStatus().equals("Active")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vote has ended");
+        }
+
         UserVote userVote = userVoteRepository.findByUser_UserIdAndVote_VoteId(userId, voteId);
         if(userVote == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vote not found");
         }
+
         userVoteRepository.deleteById(userVote.getUserVoteId());
         Option option = optionRepository.findById(userVote.getOption().getOptionId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Option not found"));
@@ -88,6 +103,15 @@ public class UserVoteServiceImpl implements UserVoteService {
 
     @Override
     public UserVoteResponseDTO FindVoteOption(UUID userId, UUID voteId) {
+        Vote vote = voteRepository.findById(voteId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vote not found"));
+        if (vote.getExpiresAt().before(new Date())) {
+            if (!"expired".equals(vote.getStatus())) {
+                vote.setStatus("expired");
+                voteRepository.save(vote);
+            }
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vote has expired");
+        }
         UserVote userVote = userVoteRepository.findByUser_UserIdAndVote_VoteId(userId, voteId);
         if (userVote == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User vote not found");
