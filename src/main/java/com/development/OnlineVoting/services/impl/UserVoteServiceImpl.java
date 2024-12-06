@@ -35,6 +35,10 @@ public class UserVoteServiceImpl implements UserVoteService {
 
     @Override
     public UserVoteResponseDTO castVote(UserVoteRequestDTO userVoteRequestDTO) {
+        UserVote userVote = userVoteRepository.findByUser_UserIdAndVote_VoteIdAndOption_OptionId(userVoteRequestDTO.getUserId(), userVoteRequestDTO.getVoteId(), userVoteRequestDTO.getOptionId());
+        if (userVote != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vote already casted");
+        }
         Vote vote = voteRepository.findById(userVoteRequestDTO.getVoteId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vote not found"));
         if (vote.getExpiresAt().before(new Date())) {
