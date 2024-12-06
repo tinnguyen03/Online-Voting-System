@@ -97,19 +97,7 @@ const VoteTopicModal = ({
         <Form.Item
           label="Deadline"
           name="deadline"
-          rules={[
-            { required: true, message: "Please select a deadline!" },
-            ({ getFieldValue }) => ({
-              validator(_, value) {
-                if (!value || value.isAfter(moment())) {
-                  return Promise.resolve();
-                }
-                return Promise.reject(
-                  new Error("The deadline must be after the creation date!")
-                );
-              },
-            }),
-          ]}
+          rules={[{ required: true, message: "Please select a deadline!" }]}
         >
           <DatePicker format="YYYY-MM-DD" style={{ width: "100%" }} />
         </Form.Item>
