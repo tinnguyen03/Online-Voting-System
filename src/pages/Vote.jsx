@@ -10,6 +10,7 @@ import {
   Layout,
   Row,
   Col,
+  Spin,
 } from "antd";
 import HeaderComponent from "../components/header/HeaderComponent";
 import FooterComponent from "../components/footer/FooterComponent";
@@ -30,6 +31,7 @@ const Vote = () => {
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [options, setOptions] = useState([]);
   const [isBanned, setIsBanned] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
 
   // Redirect the user if no token is found in localStorage
@@ -100,19 +102,36 @@ const Vote = () => {
     const userId = user.userId;
 
     try {
+      setLoading(true); // Start loading
+      // Fetch the options for the selected topic
       const response = await optionService.getAllOptions(topic.id, token);
       setOptions(response);
       setSelectedTopic(topic);
 
-      // Check if the user has already voted and get the optionId
-      const userVoteData = await userVote.findCastVote(token, userId, topic.id);
-      if (userVoteData) {
-        form.setFieldsValue({ vote: userVoteData.optionId });
+      // Attempt to find the user's vote for the topic
+      try {
+        const userVoteData = await userVote.findCastVote(
+          token,
+          userId,
+          topic.id
+        );
+        if (userVoteData) {
+          form.setFieldsValue({ vote: userVoteData.optionId });
+        }
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          // Handle 404 specifically: user hasn't voted
+          console.info("User has not cast a vote for this topic.");
+        } else {
+          // Rethrow other errors
+          throw error;
+        }
       }
-
-      setIsModalVisible(true);
     } catch (error) {
-      message.error("Failed to fetch options!");
+      //message.error("Failed to fetch options!");
+    } finally {
+      setLoading(false); // Stop loading
+      setIsModalVisible(true); // Ensure modal is shown even if there's an error
     }
   };
 
@@ -186,7 +205,7 @@ const Vote = () => {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status) => (status === "active" ? "Inactive" : "Active"),
+      render: (status) => (status === "active" ? "Active" : "Inactive"),
     },
     {
       title: "Actions",
@@ -233,26 +252,28 @@ const Vote = () => {
             onCancel={handleCancel}
             okButtonProps={{ disabled: selectedTopic?.voted || isBanned }}
           >
-            <Form form={form} layout="vertical">
-              <Form.Item
-                name="vote"
-                rules={[
-                  { required: true, message: "Please select an option!" },
-                ]}
-              >
-                <Radio.Group>
-                  <Row gutter={[16, 16]}>
-                    {options.map((option) => (
-                      <Col span={24} key={option.optionId}>
-                        <Radio value={option.optionId} disabled={isBanned}>
-                          {option.content} - {option.votesCount} votes
-                        </Radio>
-                      </Col>
-                    ))}
-                  </Row>
-                </Radio.Group>
-              </Form.Item>
-            </Form>
+            <Spin spinning={loading}>
+              <Form form={form} layout="vertical">
+                <Form.Item
+                  name="vote"
+                  rules={[
+                    { required: true, message: "Please select an option!" },
+                  ]}
+                >
+                  <Radio.Group>
+                    <Row gutter={[16, 16]}>
+                      {options.map((option) => (
+                        <Col span={24} key={option.optionId}>
+                          <Radio value={option.optionId} disabled={isBanned}>
+                            {option.content} - {option.votesCount} votes
+                          </Radio>
+                        </Col>
+                      ))}
+                    </Row>
+                  </Radio.Group>
+                </Form.Item>
+              </Form>
+            </Spin>
           </Modal>
         </div>
       </Content>
