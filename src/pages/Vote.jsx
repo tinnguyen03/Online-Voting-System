@@ -37,13 +37,13 @@ const Vote = () => {
   // Redirect the user if no token is found in localStorage
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const user = JSON.parse(localStorage.getItem("user"));
-    const userId = user.userId;
 
     if (!token) {
       message.error("You must be logged in to access this page.");
       navigate("/login"); // Redirect to login page if no token
     } else {
+      const user = JSON.parse(localStorage.getItem("user"));
+      const userId = user.userId;
       // Check if the user is banned
       const checkUserStatus = async () => {
         try {
