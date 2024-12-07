@@ -9,7 +9,7 @@ const VoteTopicModal = ({
   editTopic,
   setEditTopic,
   setVoteTopics,
-  onNewTopicCreated,
+  onCreateVote,
 }) => {
   const [form] = Form.useForm();
   const token = localStorage.getItem("token");
@@ -48,24 +48,9 @@ const VoteTopicModal = ({
         message.error("Failed to update vote topic!");
       }
     } else {
-      try {
-        const newTopic = {
-          title: values.topicName,
-          description: values.description,
-          expiresAt: values.deadline.format("YYYY-MM-DD"),
-          createdBy: user.userId,
-          options: values.options.map((option) => ({ content: option })),
-        };
-        const createdVote = await voteService.createVote(token, newTopic);
-        setVoteTopics((prevTopics) => [...prevTopics, createdVote]);
-        message.success("Vote topic created successfully!");
-        onNewTopicCreated(createdVote); // Pass the newly created topic to the parent component
-      } catch {
-        //message.error("Failed to create vote topic!");
-      }
+      onCreateVote(values);
     }
     form.resetFields();
-    setVisible(false);
   };
 
   const handleCancel = () => {

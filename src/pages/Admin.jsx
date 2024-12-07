@@ -65,6 +65,40 @@ const Admin = () => {
     navigate("/login");
   };
 
+  const handleCreateVote = async (values) => {
+    const newVote = {
+      title: values.topicName,
+      description: values.description,
+      expiresAt: values.deadline.format("YYYY-MM-DD"),
+      createdBy: JSON.parse(localStorage.getItem("user")).userId,
+      options: values.options.map((option) => ({ content: option })),
+    };
+
+    try {
+      const createdVote = await voteService.createVote(
+        localStorage.getItem("token"),
+        newVote
+      );
+
+      const formattedVote = {
+        id: createdVote.voteId,
+        title: createdVote.title,
+        description: createdVote.description,
+        status: createdVote.status,
+        createdAt: moment(createdVote.createdAt).format("YYYY-MM-DD"),
+        expiresAt: moment(createdVote.expiresAt).format("YYYY-MM-DD"),
+        options: createdVote.options || [],
+      };
+
+      // Update voteTopics with the new vote
+      setVoteTopics((prevTopics) => [...prevTopics, formattedVote]);
+      message.success("Vote topic created successfully!");
+      setIsVoteModalVisible(false);
+    } catch (error) {
+      message.error("Failed to create vote topic!");
+    }
+  };
+
   return (
     <Layout>
       <HeaderComponent onLogout={handleLogout} userType="Admin" />
@@ -98,6 +132,7 @@ const Admin = () => {
               editTopic={editTopic}
               setEditTopic={setEditTopic}
               setVoteTopics={setVoteTopics}
+              onCreateVote={handleCreateVote}
             />
             <UserTableModal
               visible={isUserModalVisible}
